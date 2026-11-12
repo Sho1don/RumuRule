@@ -18,7 +18,9 @@ sudo pacman -U rumurule-0.9.2-1-x86_64.pkg.tar.zst
 
 В Debian 12+, Ubuntu 23.10+ и производных возьмите из того же релиза
 `rumurule_0.9.2-1_amd64.deb` и выполните
-`sudo apt install ./rumurule_0.9.2-1_amd64.deb`.
+```sh
+sudo apt install ./rumurule_0.9.2-1_amd64.deb
+```
 
 Пакет ставит интерфейс, helper, polkit-действие и закреплённое ядро Xray в `/usr`.
 
