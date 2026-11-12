@@ -6,6 +6,18 @@
 
 > Десктопный клиент для Linux, который запускает Xray либо как локальный SOCKS5/HTTP-прокси, либо как системный TUN-интерфейс.
 
+## Установка
+
+Скачайте `rumurule-0.9.2-1-x86_64.pkg.tar.zst` из
+[pre-release 0.9.2](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.2)
+и установите:
+
+```sh
+sudo pacman -U rumurule-0.9.2-1-x86_64.pkg.tar.zst
+```
+
+Пакет ставит интерфейс, helper, polkit-действие и закреплённое ядро Xray в `/usr`.
+
 ## Требования
 
 - Rust 1.99+
