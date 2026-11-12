@@ -1,0 +1,1092 @@
+/* Cards, fields, buttons and lists. */
+
+.card {
+  display: grid;
+  gap: var(--gap);
+  min-width: 0;
+  padding: var(--pad);
+  border-radius: var(--radius);
+  background: var(--md-surface-container);
+}
+
+.card.logs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 120px;
+}
+
+/* The log view is the only one that grows to fill the window. */
+.view[data-active="true"] > .card.logs {
+  min-height: 0;
+}
+
+.card.logs pre {
+  min-height: 0;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 4px clamp(10px, 1.6vw, 14px);
+  border-radius: 999px;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge[data-state="online"] {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.badge[data-state="connecting"] {
+  color: var(--md-primary);
+}
+
+.badge[data-state="error"] {
+  color: var(--md-error);
+}
+
+.badge[data-state="failed"] {
+  color: var(--md-error);
+}
+
+/* The Status tab prints the same state on its card, so the header chip would
+   be a second copy of the same word. Other sections keep it. */
+body:has(#view-home[data-active="true"]) #state {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  min-width: 0;
+}
+
+.row.between {
+  justify-content: space-between;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inline input {
+  flex: 1 1 240px;
+}
+
+.inline button {
+  flex: 0 1 auto;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: clamp(10px, 1.4vw, 14px) clamp(12px, 1.8vw, 16px);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--radius-field);
+  background: var(--md-surface);
+  color: inherit;
+  font: inherit;
+  font-size: max(16px, 0.9rem);
+}
+
+textarea {
+  resize: vertical;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: max(15px, 0.85rem);
+  line-height: 1.5;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 1px;
+}
+
+button {
+  min-height: var(--tap);
+  padding: 10px clamp(16px, 2.4vw, 24px);
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter 120ms ease, background-color 120ms ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.filled {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.tonal {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+
+button.text {
+  min-height: 36px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--md-primary);
+}
+
+button.text.danger {
+  color: var(--md-error);
+}
+
+button:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+.muted {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.empty {
+  padding: 2px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.list:empty {
+  display: none;
+}
+
+.list[hidden] {
+  display: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 8px 8px clamp(12px, 1.8vw, 16px);
+  border-radius: clamp(14px, 2vw, 18px);
+  background: var(--md-surface);
+  /* A row is a pick-the-server target. */
+  cursor: pointer;
+  /* Rows live in a long list: keep each one's layout and paint independent so
+     a window resize or a scroll does not reflow the whole list, and skip the
+     offscreen rows entirely. */
+  contain: layout paint style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
+}
+
+/* The server the Connect button will use: a filled row plus a check, so the
+   current pick is visible before anything connects. A live session draws on
+   top of it with the stronger primary container and a "Live" badge. */
+.item[data-selected="true"] {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.item[data-selected="true"] .item-meta {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.item-check {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: inherit;
+}
+
+.item-check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.item-live {
+  flex: 0 0 auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.item[data-active="true"] {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.item-main {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.item-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-meta {
+  font-size: 0.78rem;
+  color: var(--md-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item[data-active="true"] .item-meta {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.item-actions {
+  display: flex;
+  gap: 2px;
+  flex: 0 1 auto;
+  margin-left: auto;
+}
+
+pre {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 60px;
+  overflow: auto;
+  padding: clamp(10px, 1.4vw, 14px);
+  border-radius: var(--radius-field);
+  background: var(--md-surface);
+  color: var(--md-on-surface-variant);
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Settings: HWID switch and id. */
+
+.switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.switch .item-main {
+  flex: 1 1 auto;
+}
+
+.switch input {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--md-surface-container-high);
+  position: relative;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.switch input::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: var(--md-outline);
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.switch input:checked {
+  background: var(--md-primary);
+}
+
+.switch input:checked::after {
+  transform: translateX(20px);
+  background: var(--md-on-primary);
+}
+
+.divider {
+  height: 1px;
+  background: var(--md-outline-variant);
+  opacity: 0.55;
+}
+
+.hwid-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hwid {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--md-on-surface-variant);
+}
+
+/* Settings: ping method chooser. */
+
+.section-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.choices {
+  display: grid;
+  gap: 2px;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius-field);
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: var(--md-surface-container-high);
+}
+
+.choice .item-main {
+  flex: 1 1 auto;
+}
+
+.choice input[type="radio"] {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 2px solid var(--md-outline);
+  border-radius: 50%;
+  background: transparent;
+  transition: border-color 120ms ease;
+}
+
+.choice input[type="radio"]::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--md-primary);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+.choice input[type="radio"]:checked {
+  border-color: var(--md-primary);
+}
+
+.choice input[type="radio"]:checked::after {
+  transform: scale(1);
+}
+
+.ping-extra {
+  display: grid;
+  gap: var(--gap);
+}
+
+.ping-extra[hidden] {
+  display: none;
+}
+
+/* Subscription groups and server probes. */
+
+.groups {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.group {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+  min-width: 0;
+}
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 6px 0 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.group-toggle:hover {
+  filter: none;
+  background: var(--md-surface-container-high);
+}
+
+.group-chevron {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--md-on-surface-variant);
+  transition: transform 160ms ease;
+}
+
+.group-chevron svg {
+  width: 18px;
+  height: 18px;
+}
+
+.group[data-collapsed="true"] .group-chevron {
+  transform: rotate(-90deg);
+}
+
+.group-count {
+  flex: 0 0 auto;
+  color: var(--md-on-surface-variant);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pin-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--md-primary);
+}
+
+.pin-mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.group-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-actions {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--md-on-surface-variant);
+}
+
+.icon-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-button:hover {
+  filter: none;
+  background: var(--md-surface-container-high);
+}
+
+.icon-button.danger {
+  color: var(--md-error);
+  font-size: 0.95rem;
+}
+
+.ping {
+  min-width: 58px;
+  min-height: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ping:hover {
+  filter: none;
+  background: var(--md-surface-container-high);
+}
+
+.ping[data-state="pending"] {
+  opacity: 0.55;
+}
+
+.ping[data-state="fail"] {
+  color: var(--md-error);
+}
+
+/* Floating menu and rename dialog. */
+
+.menu {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  min-width: 176px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--md-surface-container-high);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu:not([hidden]) {
+  animation: menu-in 120ms ease;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu:not([hidden]) {
+    animation: none;
+  }
+}
+
+.menu-item {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.menu-item:hover {
+  filter: none;
+  background: var(--md-surface-container);
+}
+
+.menu-item.danger {
+  color: var(--md-error);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.dialog {
+  display: grid;
+  gap: 16px;
+  width: min(420px, 100%);
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--md-surface-container-high);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
+}
+
+.dialog h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* First-run setup: one privileged install, then no password prompts. */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 55%);
+}
+
+.welcome[hidden] {
+  display: none;
+}
+
+.welcome-card {
+  display: grid;
+  gap: 14px;
+  width: min(460px, 100%);
+  padding: 26px;
+  border-radius: 28px;
+  background: var(--md-surface-container-high);
+  box-shadow: 0 22px 60px rgb(0 0 0 / 45%);
+}
+
+.welcome-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+}
+
+.welcome-card h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.welcome-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--md-on-surface-variant);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.welcome-list li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.welcome-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.5em;
+  left: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--md-primary);
+}
+
+.welcome-list strong {
+  color: var(--md-on-surface);
+  font-weight: 600;
+}
+
+.welcome-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+#welcome-status[data-tone="error"] {
+  color: var(--md-error);
+}
+
+/* Transient message above the dock; used when a session ends on its own. */
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  max-width: min(92vw, 460px);
+  padding: 10px 16px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: 999px;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 22%);
+  font-size: 13px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.notice[data-tone="error"] {
+  border-color: var(--md-error);
+  color: var(--md-error);
+}
+
+.notice[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Status tab: content hugs the dock instead of hanging at the top. */
+#view-home[data-active="true"] {
+  justify-content: flex-end;
+}
+
+/* Connection tab: state, session timer and the single Connect button. */
+.home-body {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 0 22px;
+  text-align: center;
+}
+
+.home-server {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+/* A failed attempt explains itself as an M3 error container: icon, a short
+   title and the reason, plus a dismiss action. It stays until the next try. */
+.home-error {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  margin: -6px 0 16px;
+  padding: 12px 8px 12px 14px;
+  border-radius: var(--radius-field);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  text-align: left;
+}
+
+.home-error[hidden] {
+  display: none;
+}
+
+.home-error-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  fill: currentColor;
+}
+
+.home-error-body {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.home-error-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.home-error-reason {
+  font-size: 0.85rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.home-error .icon-button {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+  color: inherit;
+}
+
+.home-error .icon-button:hover {
+  background: rgb(0 0 0 / 8%);
+}
+
+/* Wavy linear progress, M3 anatomy: a fixed track, a wavy active segment
+   that grows, shrinks and travels while the process runs (indeterminate),
+   and a full line with a 4dp stop dot once it completes (determinate). */
+.home-wave {
+  position: relative;
+  width: min(320px, 82%);
+  height: 24px;
+  color: var(--md-primary);
+  overflow: hidden;
+}
+
+/* Wide windows: a linear indicator belongs on the edge of its container, so
+   it spans the whole card instead of sitting in a small island. */
+@media (min-width: 561px) {
+  .home-wave {
+    width: 100%;
+  }
+}
+
+.wave-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 10px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: var(--md-surface-container-highest);
+  transition: clip-path 260ms var(--md-easing-emphasized);
+}
+
+/* The active indicator replaces the track where it has already passed, so
+   the track is only drawn ahead of the leading edge. Without this the thin
+   line shows through the wave between its crests. */
+.home-wave[data-phase="determinate"] .wave-track,
+.home-wave[data-phase="connected"] .wave-track {
+  clip-path: inset(0 0 0 calc(var(--p, 0) * (100% - 10px)));
+}
+
+/* Active segment: most of the track, stretched and squeezed as it sweeps
+   from the leading to the trailing edge. */
+.wave-segment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 62%;
+  height: 100%;
+  opacity: 1;
+  transform-origin: left center;
+  transition: opacity var(--md-duration-sm) var(--md-easing-standard);
+  animation: wave-sweep 1.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  mask: linear-gradient(90deg, transparent, #000 4% 96%, transparent);
+}
+
+.wave-segment svg {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  height: 100%;
+  animation: wave-drift 1.6s linear infinite;
+}
+
+.wave-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 10px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: var(--md-primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--md-duration-md) var(--md-easing-emphasized);
+}
+
+/* Determinate: the wavy active indicator is clipped to the reported share,
+   so the wave grows with the percentage while keeping its shape. */
+.wave-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 10px;
+  height: 100%;
+  opacity: 0;
+  clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0);
+  transition: clip-path 260ms var(--md-easing-emphasized),
+    opacity 160ms var(--md-easing-standard);
+}
+
+.wave-progress svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.home-wave[data-phase="determinate"] .wave-progress {
+  opacity: 1;
+}
+
+.home-wave[data-phase="determinate"] .wave-segment {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
+.home-wave[data-phase="connected"] .wave-progress {
+  opacity: 0;
+}
+
+/* The stop indicator is a fixed 4dp mark at the end of the track: it tells
+   the eye where a determinate line finishes, so it never travels with the
+   active indicator. */
+.wave-stop {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--md-primary);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--md-duration-sm) var(--md-easing-standard),
+    transform var(--md-duration-md) var(--md-easing-emphasized);
+}
+
+.home-wave[data-phase="determinate"] .wave-stop {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Completed: the wave settles into a solid line plus the stop dot. */
+.home-wave[data-phase="connected"] .wave-segment {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
+.home-wave[data-phase="connected"] .wave-fill {
+  transform: scaleX(1);
+}
+
+.home-wave[data-phase="connected"] .wave-stop {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes wave-sweep {
+  0% {
+    transform: translateX(-110%) scaleX(0.55);
+  }
+  55% {
+    transform: translateX(30%) scaleX(1);
+  }
+  100% {
+    transform: translateX(200%) scaleX(0.55);
+  }
+}
+
+@keyframes wave-drift {
+  to {
+    /* Exactly one wavelength (32 of the 400 viewBox units = 8% of the SVG
+       width), so the loop is seamless at any container size. */
+    transform: translateX(-8%);
+  }
+}
+
+/* Progress is information, not decoration: the sweep keeps running with
+   reduced motion and on a slow compositor, only the decorative transitions
+   are dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .wave-segment {
+    animation-duration: 2.4s;
+  }
+}
+
+html[data-motion="reduced"] .wave-segment {
+  animation-duration: 2.4s;
+}
+
+.home-uptime {
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.home-connect {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.05rem;
+}

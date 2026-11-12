@@ -1,0 +1,130 @@
+/* Page frame and header. */
+
+.app {
+  width: 100%;
+  max-width: 860px;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: var(--pad);
+  padding-left: max(var(--pad), env(safe-area-inset-left));
+  padding-right: max(var(--pad), env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  overflow: hidden;
+}
+
+/* Material 3 motion tokens: emphasized easing and duration roles. */
+:root {
+  --md-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --md-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-duration-sm: 120ms;
+  --md-duration-md: 250ms;
+  --md-duration-lg: 350ms;
+}
+
+/* One tab at a time; only the active view takes part in the layout. */
+.view {
+  display: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Vertical scrolling stays native; horizontal drags become swipes. */
+  touch-action: pan-y;
+  transition: transform var(--md-duration-sm) var(--md-easing-standard);
+  /* Leave room for the floating dock. */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.view[data-active="true"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Shared axis X: the incoming view travels from the direction of the swipe
+   while fading in, which keeps the spatial order of the sections. */
+@keyframes shared-axis-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+@keyframes shared-axis-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+/* Fade through: a click on the dock has no direction, so the view simply
+   surfaces from 92% scale, like the M3 fade-through pattern. */
+@keyframes fade-through-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+.view.slide-from-right {
+  animation: shared-axis-from-right var(--md-duration-md) var(--md-easing-emphasized);
+}
+
+.view.slide-from-left {
+  animation: shared-axis-from-left var(--md-duration-md) var(--md-easing-emphasized);
+}
+
+.view.fade-through {
+  animation: fade-through-in var(--md-duration-md) var(--md-easing-emphasized);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view {
+    transition: none;
+  }
+
+  .view.slide-from-right,
+  .view.slide-from-left,
+  .view.fade-through {
+    animation: none;
+  }
+}
+
+/* Low frame rate: state changes are instant instead of stuttering. */
+html[data-motion="reduced"] .view,
+html[data-motion="reduced"] .menu,
+html[data-motion="reduced"] .modal,
+html[data-motion="reduced"] .view.slide-from-right,
+html[data-motion="reduced"] .view.slide-from-left,
+html[data-motion="reduced"] .view.fade-through {
+  animation: none !important;
+  transition: none !important;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.4vw, 12px);
+  font-size: clamp(1.1rem, 0.8vw + 0.9rem, 1.3rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+.mark {
+  width: clamp(24px, 3vw, 30px);
+  height: clamp(24px, 3vw, 30px);
+  border-radius: clamp(7px, 1vw, 9px);
+  object-fit: cover;
+  flex: 0 0 auto;
+}

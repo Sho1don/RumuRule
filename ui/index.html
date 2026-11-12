@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RumuRule</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dock.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <img class="mark" src="icon.png" alt="">
+        <span>RumuRule</span>
+      </div>
+      <span class="badge" id="state" data-state="offline">offline</span>
+    </header>
+
+    <section id="view-home" class="view">
+      <div class="card">
+        <div class="row between">
+          <h2>Connection</h2>
+          <span id="home-state" class="badge" data-state="offline">offline</span>
+        </div>
+        <div class="home-body">
+          <span id="home-server" class="home-server">No server selected</span>
+          <span id="home-meta" class="muted">Add a subscription in the Servers tab.</span>
+          <span id="home-wave" class="home-wave" data-phase="connecting" hidden>
+            <span class="wave-track" aria-hidden="true"></span>
+            <span class="wave-segment" aria-hidden="true">
+              <svg viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 12 Q 8 4 16 12 T 32 12 T 48 12 T 64 12 T 80 12 T 96 12 T 112 12 T 128 12 T 144 12 T 160 12 T 176 12 T 192 12 T 208 12 T 224 12 T 240 12 T 256 12 T 272 12 T 288 12 T 304 12 T 320 12 T 336 12 T 352 12 T 368 12 T 384 12 T 400 12"
+                  fill="none" stroke="currentColor" stroke-width="3.5"
+                  stroke-linecap="round"></path>
+              </svg>
+            </span>
+            <span class="wave-progress" aria-hidden="true">
+              <svg viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 12 Q 8 4 16 12 T 32 12 T 48 12 T 64 12 T 80 12 T 96 12 T 112 12 T 128 12 T 144 12 T 160 12 T 176 12 T 192 12 T 208 12 T 224 12 T 240 12 T 256 12 T 272 12 T 288 12 T 304 12 T 320 12 T 336 12 T 352 12 T 368 12 T 384 12 T 400 12"
+                  fill="none" stroke="currentColor" stroke-width="3.5"
+                  stroke-linecap="round"></path>
+              </svg>
+            </span>
+            <span class="wave-fill" aria-hidden="true"></span>
+            <span class="wave-stop" aria-hidden="true"></span>
+          </span>
+          <span id="home-uptime" class="home-uptime" hidden>00:00:00</span>
+        </div>
+        <div id="home-error" class="home-error" role="alert" hidden>
+          <svg class="home-error-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2 1 21h22L12 2Zm1 17h-2v-2h2v2Zm0-4h-2v-5h2v5Z"/>
+          </svg>
+          <div class="home-error-body">
+            <span class="home-error-title">Could not connect</span>
+            <span id="home-error-reason" class="home-error-reason"></span>
+          </div>
+          <button id="home-error-dismiss" class="icon-button" type="button" aria-label="Dismiss">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4Z"/>
+            </svg>
+          </button>
+        </div>
+        <button id="home-connect" class="filled home-connect" type="button">Connect</button>
+      </div>
+    </section>
+
+    <section id="view-servers" class="view" data-active="true">
+      <div class="card">
+        <div class="row between">
+          <h2>Servers</h2>
+          <span id="count" class="muted">0 saved</span>
+        </div>
+        <div id="servers" class="groups"></div>
+        <p id="servers-empty" class="muted empty">No servers yet — add a link or a subscription.</p>
+        <div class="divider"></div>
+        <div id="add-source" class="inline">
+          <input id="sub-url" type="text" spellcheck="false"
+            placeholder="https://…/subscription or vless://…">
+          <button id="add-sub" class="tonal" type="button">Add</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <div class="card">
+        <div class="row between">
+          <h2>Settings</h2>
+          <span class="muted">device &amp; network</span>
+        </div>
+        <label class="switch">
+          <span class="item-main">
+            <span class="item-title">HWID</span>
+            <span class="muted">Panels may bind the subscription to one device.</span>
+          </span>
+          <input id="hwid-toggle" type="checkbox">
+        </label>
+        <div class="hwid-row">
+          <code id="hwid-value" class="hwid"></code>
+          <button id="hwid-reset" class="text" type="button">Reset</button>
+        </div>
+        <div class="divider"></div>
+        <div class="row between">
+          <h3 class="section-title">Tunnel</h3>
+          <span id="tun-status" class="muted">checking…</span>
+        </div>
+        <label class="switch">
+          <span class="item-main">
+            <span class="item-title">TUN</span>
+            <span class="muted">Route every application through the server.</span>
+          </span>
+          <input id="tun-toggle" type="checkbox">
+        </label>
+        <p class="muted">
+          The local proxy stays available either way: SOCKS 127.0.0.1:10808,
+          HTTP 127.0.0.1:10809.
+        </p>
+        <div id="tun-extra" class="ping-extra" hidden>
+          <p id="tun-detail" class="muted"></p>
+          <button id="tun-authorize" class="tonal" type="button">Allow tunnel</button>
+          <button id="tun-setup" class="text" type="button">Set up without password</button>
+        </div>
+        <div class="divider"></div>
+        <label class="switch">
+          <span class="item-main">
+            <span class="item-title">System proxy</span>
+            <span class="muted">Point desktop apps at 127.0.0.1:10809 while connected.</span>
+          </span>
+          <input id="proxy-toggle" type="checkbox">
+        </label>
+        <p class="muted">Previous settings are restored on disconnect.</p>
+        <div class="divider"></div>
+        <label class="switch">
+          <span class="item-main">
+            <span class="item-title">Show server addresses</span>
+            <span class="muted">Reveal IP endpoints of servers in the list and on the status tab.</span>
+          </span>
+          <input id="show-ip-toggle" type="checkbox">
+        </label>
+        <div class="divider"></div>
+        <div class="row between">
+          <h3 class="section-title">Ping</h3>
+          <span class="muted">how latency is measured</span>
+        </div>
+        <div class="choices" role="radiogroup" aria-label="Ping method">
+          <label class="choice">
+            <input type="radio" name="ping-kind" value="proxy">
+            <span class="item-main">
+              <span class="item-title">Via proxy</span>
+              <span class="muted">Download the test URL through the server.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="ping-kind" value="tcp">
+            <span class="item-main">
+              <span class="item-title">TCP</span>
+              <span class="muted">Direct TCP handshake with the server port.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="ping-kind" value="icmp">
+            <span class="item-main">
+              <span class="item-title">ICMP</span>
+              <span class="muted">System ping to the server host.</span>
+            </span>
+          </label>
+        </div>
+        <div id="ping-proxy" class="ping-extra" hidden>
+          <label class="field">
+            <span class="field-label">Mode</span>
+            <select id="ping-mode">
+              <option value="default">Default</option>
+              <option value="double">Double</option>
+              <option value="keepalive">Keep-alive</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Test URL</span>
+            <input id="ping-url" type="url" spellcheck="false"
+              placeholder="https://www.gstatic.com/generate_204">
+          </label>
+        </div>
+        <div class="divider"></div>
+        <div class="row between">
+          <h3 class="section-title">Core</h3>
+          <span id="core-version" class="muted">checking…</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-logs" class="view">
+      <div class="card logs">
+        <div class="row between">
+          <h2>Xray log</h2>
+          <span id="ports" class="muted">socks 10808 · http 10809</span>
+        </div>
+        <pre id="log" aria-live="polite"></pre>
+      </div>
+    </section>
+  </main>
+
+  <nav class="dock" role="tablist" aria-label="Sections">
+    <button class="tab" type="button" role="tab" data-tab="home"
+      aria-controls="view-home" aria-selected="false">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v9"></path>
+          <path d="M7.5 6a8 8 0 1 0 9 0"></path>
+        </svg>
+      </span>
+      <span>Status</span>
+    </button>
+
+    <button class="tab" type="button" role="tab" data-tab="servers"
+      aria-controls="view-servers" aria-selected="true">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="6" rx="2"></rect>
+          <rect x="4" y="14" width="16" height="6" rx="2"></rect>
+          <path d="M8 7h.01M8 17h.01"></path>
+        </svg>
+      </span>
+      <span>Servers</span>
+    </button>
+
+    <button class="tab" type="button" role="tab" data-tab="settings"
+      aria-controls="view-settings" aria-selected="false">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 7h9M18 7h1M5 17h1M10 17h9"></path>
+          <circle cx="16" cy="7" r="2"></circle>
+          <circle cx="8" cy="17" r="2"></circle>
+        </svg>
+      </span>
+      <span>Settings</span>
+    </button>
+
+    <button class="tab" type="button" role="tab" data-tab="logs"
+      aria-controls="view-logs" aria-selected="false">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="3"></rect>
+          <path d="M7 10l2.5 2L7 14M12 15h5"></path>
+        </svg>
+      </span>
+      <span>Logs</span>
+    </button>
+  </nav>
+
+  <div id="menu" class="menu" role="menu" hidden></div>
+
+  <div id="welcome" class="welcome" hidden>
+    <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <img class="welcome-mark" src="icon.png" alt="">
+      <h2 id="welcome-title">Hello</h2>
+      <p class="muted">
+        The tunnel needs admin rights; the window itself does not. Set it up
+        once and connecting never asks for a password again.
+      </p>
+      <ul class="welcome-list">
+        <li><strong>One time.</strong> The helper, the polkit action and a rule
+          for your user are installed together.</li>
+        <li><strong>Still separate.</strong> Only the tunnel helper runs as
+          root; the interface stays yours.</li>
+        <li><strong>Reversible.</strong> Delete two files from
+          /usr/lib/rumurule and /usr/share/polkit-1 to undo it.</li>
+      </ul>
+      <p id="welcome-status" class="muted"></p>
+      <div class="welcome-actions">
+        <button id="welcome-later" class="text" type="button">Later</button>
+        <button id="welcome-setup" class="filled" type="button">Set up once</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <form id="modal-form" class="dialog" autocomplete="off">
+      <h2 id="modal-title">Rename</h2>
+      <label class="field">
+        <span class="field-label" id="modal-label">Name</span>
+        <input id="modal-input" type="text" spellcheck="false">
+      </label>
+      <div class="dialog-actions">
+        <button id="modal-cancel" class="text" type="button">Cancel</button>
+        <button class="tonal" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="notice" class="notice" role="status" data-visible="false"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=RumuRule
+GenericName=VPN Client
+Comment=VPN client with TUN and a local SOCKS/HTTP proxy
+Exec=rumurule
+Icon=slop.rumurule
+Terminal=false
+Categories=Network;
+Keywords=VPN;proxy;xray;vless;vmess;trojan;shadowsocks;hysteria;
+StartupNotify=true
+StartupWMClass=rumurule

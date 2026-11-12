@@ -1,0 +1,85 @@
+/* Phones and narrow windows. */
+
+@media (max-width: 560px) {
+  .app {
+    gap: 10px;
+  }
+
+  /* Let the pill shrink with the window; the tabs above give up their width. */
+  .dock {
+    width: calc(100vw - 2 * var(--pad));
+    max-width: none;
+  }
+
+  .view[data-active="true"] {
+    gap: 10px;
+  }
+
+  .card.logs {
+    min-height: 100px;
+  }
+
+
+  .tab {
+    /* The dock spans the window on a phone, so the four tabs share that width
+       instead of keeping their desktop min-width and spilling outside the
+       pill. */
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 4px 5px;
+    font-size: 0.68rem;
+  }
+
+  .tab-icon {
+    width: 100%;
+    max-width: 56px;
+  }
+
+  .inline,
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inline input,
+  .inline button,
+  .actions button {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .item {
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 6px 4px 6px 10px;
+  }
+
+  .item-main {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* A server row stays one line: the name and its meta on the left, the probe
+     and the menu on the right. The full-width rules meant for forms would turn
+     every row into three stacked decks. */
+  .item-actions {
+    width: auto;
+    margin-left: 0;
+    flex: 0 0 auto;
+  }
+
+  .item-actions button {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .ping {
+    min-width: 0;
+    padding: 4px 6px;
+  }
+
+  .row.between {
+    align-items: baseline;
+  }
+}

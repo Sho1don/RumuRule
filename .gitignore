@@ -1,0 +1,13 @@
+target/
+.gradle/
+.kotlin/
+.idea/
+dist/
+node_modules/
+src-tauri/gen/schemas/
+
+# makepkg leaves these next to the PKGBUILD.
+packaging/src/
+packaging/pkg/
+packaging/*.tar.gz
+packaging/*.pkg.tar.zst

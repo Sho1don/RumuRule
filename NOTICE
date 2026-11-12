@@ -1,0 +1,28 @@
+RumuRule
+Copyright (c) 2026 RumuRule contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Section 13 of the license applies to network use: users interacting with a
+modified version over a network must be offered its corresponding source code.
+
+Third-party components shipped with or used by RumuRule:
+
+- Xray-core — https://github.com/XTLS/Xray-core — Mozilla Public License 2.0
+- Tauri — https://tauri.app — MIT or Apache License 2.0
+- Rust standard library and crates — https://crates.io — MIT or Apache License 2.0
+- WebKitGTK — https://webkitgtk.org — GNU LGPL 2.1 or later
+- GTK — https://gtk.org — GNU LGPL 2.1 or later
+
+These components keep their own licenses and are not relicensed by RumuRule.
+Full license texts are distributed alongside the application packages.

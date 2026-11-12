@@ -1,0 +1,60 @@
+# Maintainer: RumuRule contributors
+#
+# The package ships a pinned Xray core next to the helper, so the build is
+# reproducible and does not depend on an AUR core that may move. Set
+# RUMURULE_XRAY=/usr/bin/xray to use a system core instead.
+#
+# The application tarball points at the release tag. Until the first tag is
+# published, build from a checkout with `makepkg` on a local source instead.
+pkgname=rumurule
+pkgver=0.9.2
+pkgrel=1
+pkgdesc="VPN client with a TUN interface and a local SOCKS/HTTP proxy (Material You, Xray core)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/Sho1don/RumuRule"
+license=('AGPL-3.0-only')
+# makepkg appends LTOFLAGS (-flto=auto) to CFLAGS and LDFLAGS. ring's
+# pregenerated assembly then links with every ring_core_* symbol undefined,
+# so the whole package opts out of LTO. Rust does its own LTO separately.
+options=('!lto')
+depends=('gtk3' 'webkit2gtk-4.1' 'libayatana-appindicator' 'polkit' 'iproute2')
+makedepends=('cargo' 'pkgconf')
+optdepends=('xray: use a system core instead of the bundled one')
+_xrayver=26.11.9
+
+source_x86_64=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
+               "Xray.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-64.zip")
+sha256sums_x86_64=('SKIP'
+                   'b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82')
+
+source_aarch64=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
+                "Xray.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-arm64-v8a.zip")
+sha256sums_aarch64=('SKIP'
+                    '64ed6858982a7f5eb85d88b811089063bd4f17561f4c8f44e0f1dc8e6f6430be')
+
+build() {
+    cd "$pkgname-$pkgver"
+    cargo build --release --locked
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+
+    install -Dm755 target/release/rumurule "$pkgdir/usr/bin/rumurule"
+    install -Dm755 target/release/rumurule-helper \
+        "$pkgdir/usr/lib/rumurule/rumurule-helper"
+    install -Dm755 "$srcdir/xray" "$pkgdir/usr/lib/rumurule/xray"
+
+    install -Dm644 packaging/slop.rumurule.tunnel.policy \
+        "$pkgdir/usr/share/polkit-1/actions/slop.rumurule.tunnel.policy"
+    install -Dm644 packaging/slop.rumurule.desktop \
+        "$pkgdir/usr/share/applications/slop.rumurule.desktop"
+
+    for size in 16 24 32 48 64 128 256 512; do
+        install -Dm644 "packaging/icons/hicolor/${size}x${size}/apps/slop.rumurule.png" \
+            "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/slop.rumurule.png"
+    done
+
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 NOTICE "$pkgdir/usr/share/licenses/$pkgname/NOTICE"
+}
