@@ -10,7 +10,10 @@ src-tauri/gen/schemas/
 packaging/src/
 packaging/pkg/
 packaging/*.tar.gz
+packaging/*.zip
 packaging/*.pkg.tar.zst
+# makepkg keeps its VCS mirror next to the recipe.
+packaging/RumuRule/
 
 # Generated for the AUR upload and the release asset.
 packaging/.SRCINFO
