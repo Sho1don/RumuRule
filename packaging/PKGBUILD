@@ -39,7 +39,11 @@ sha256sums_aarch64=('SKIP'
 
 build() {
     cd "$srcdir/$_repo"
-    cargo build --release --locked
+    # makepkg.conf may carry -march=native for C and -C target-cpu=native for
+    # Rust, and both end up in the binary. The package must run on any x86_64
+    # CPU, so the build ignores them and keeps the generic baseline.
+    RUSTFLAGS="-C opt-level=3 -C target-cpu=x86-64" \
+        CFLAGS="-O2" CXXFLAGS="-O2" cargo build --release --locked
 }
 
 package() {
