@@ -1,4 +1,4 @@
-# Maintainer: RumuRule contributors
+# Maintainer: Sholdon <110736138+Sho1don@users.noreply.github.com>
 #
 # The package ships a pinned Xray core next to the helper, so the build is
 # reproducible and does not depend on an AUR core that may move. Set
