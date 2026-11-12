@@ -13,6 +13,7 @@ packaging/*.tar.gz
 packaging/*.zip
 packaging/*.pkg.tar.zst
 packaging/*.deb
+packaging/*.rpm
 # makepkg keeps its VCS mirror next to the recipe.
 packaging/RumuRule/
 
