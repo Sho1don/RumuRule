@@ -11,3 +11,7 @@ packaging/src/
 packaging/pkg/
 packaging/*.tar.gz
 packaging/*.pkg.tar.zst
+
+# Generated for the AUR upload and the release asset.
+packaging/.SRCINFO
+packaging/*.sha256
