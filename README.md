@@ -16,6 +16,10 @@ and install it:
 sudo pacman -U rumurule-0.9.2-1-x86_64.pkg.tar.zst
 ```
 
+On Debian 12+, Ubuntu 23.10+ and derivatives, take
+`rumurule_0.9.2-1_amd64.deb` from the same release and use
+`sudo apt install ./rumurule_0.9.2-1_amd64.deb`.
+
 The package installs the GUI, the helper, the polkit action and a pinned Xray
 core under `/usr`.
 
