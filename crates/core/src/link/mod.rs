@@ -107,6 +107,45 @@ pub(crate) fn network_from(value: Option<String>) -> Network {
     Network::parse(value.as_deref().unwrap_or("tcp"))
 }
 
+/// WebSocket early data size. Panels write it as `ed=2048`; anything that is not
+/// a positive number is dropped rather than turned into a broken config.
+pub(crate) fn early_data(value: Option<String>) -> Option<u32> {
+    value
+        .and_then(|raw| raw.trim().parse::<u32>().ok())
+        .filter(|size| *size > 0)
+}
+
+/// `xhttpSettings.extra` taken from a share link.
+///
+/// Panels either hand over the whole object as `extra=<json>` or spread its
+/// fields across the query string. Both spellings end up in one object; the
+/// JSON wins where they collide.
+pub(crate) fn xhttp_extra(
+    raw: Option<String>,
+    padding: Option<String>,
+    max_post: Option<String>,
+    min_interval: Option<String>,
+    no_grpc_header: Option<String>,
+) -> Option<serde_json::Value> {
+    let mut extra = match raw.as_deref().map(serde_json::from_str::<serde_json::Value>) {
+        Some(Ok(serde_json::Value::Object(object))) => object,
+        _ => serde_json::Map::new(),
+    };
+    for (key, value) in [
+        ("xPaddingBytes", padding),
+        ("scMaxEachPostBytes", max_post),
+        ("scMinPostsIntervalMs", min_interval),
+    ] {
+        if let Some(value) = value.filter(|value| !value.is_empty()) {
+            extra.insert(key.into(), serde_json::json!(value));
+        }
+    }
+    if matches!(no_grpc_header.as_deref(), Some("1" | "true" | "yes")) {
+        extra.insert("noGRPCHeader".into(), serde_json::json!(true));
+    }
+    (!extra.is_empty()).then(|| serde_json::Value::Object(extra))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

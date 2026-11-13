@@ -98,6 +98,11 @@ fn summarize(name: &str, config: &Value) -> Profile {
         obfs_password: None,
         pin_sha256: None,
         insecure: false,
+        mode: None,
+        header_type: None,
+        early_data: None,
+        early_data_header: None,
+        extra: None,
     };
 
     let Some(outbounds) = config.get("outbounds").and_then(Value::as_array) else {

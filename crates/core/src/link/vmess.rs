@@ -2,7 +2,7 @@
 
 use serde_json::Value;
 
-use super::{alpn_list, base64_decode, network_from, Error, Result};
+use super::{alpn_list, base64_decode, early_data, network_from, Error, Result};
 use crate::model::{Profile, Security};
 
 pub(super) fn parse(rest: &str) -> Result<Profile> {
@@ -51,6 +51,13 @@ pub(super) fn parse(rest: &str) -> Result<Profile> {
         obfs_password: None,
         pin_sha256: None,
         insecure: false,
+        // VMess keeps the transport mode in `type`, and `ed`/`eh` when the
+        // panel generates the link for a WebSocket server.
+        mode: text("mode"),
+        header_type: text("type").filter(|kind| kind == "http"),
+        early_data: early_data(text("ed")),
+        early_data_header: text("eh"),
+        extra: None,
     })
 }
 

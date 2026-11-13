@@ -3,7 +3,8 @@
 use url::Url;
 
 use super::{
-    alpn_list, decode, fragment_name, network_from, query, split_host_port, Error, Result,
+    alpn_list, decode, early_data, fragment_name, network_from, query, split_host_port, xhttp_extra,
+    Error, Result,
 };
 use crate::model::{Profile, Security};
 
@@ -41,6 +42,17 @@ pub(super) fn parse(rest: &str) -> Result<Profile> {
         obfs_password: None,
         pin_sha256: None,
         insecure: false,
+        mode: q("mode"),
+        header_type: q("headerType"),
+        early_data: early_data(q("ed")),
+        early_data_header: q("eh").or_else(|| q("earlyDataHeaderName")),
+        extra: xhttp_extra(
+            q("extra"),
+            q("xPaddingBytes"),
+            q("scMaxEachPostBytes"),
+            q("scMinPostsIntervalMs"),
+            q("noGRPCHeader"),
+        ),
     })
 }
 

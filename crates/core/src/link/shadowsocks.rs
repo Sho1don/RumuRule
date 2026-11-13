@@ -61,6 +61,11 @@ pub(super) fn parse(rest: &str) -> Result<Profile> {
         obfs_password: None,
         pin_sha256: None,
         insecure: false,
+        mode: None,
+        header_type: None,
+        early_data: None,
+        early_data_header: None,
+        extra: None,
     })
 }
 

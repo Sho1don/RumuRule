@@ -11,6 +11,7 @@ pub enum Network {
     Grpc,
     Http,
     Xhttp,
+    HttpUpgrade,
 }
 
 impl Network {
@@ -20,6 +21,7 @@ impl Network {
             "grpc" | "gun" => Self::Grpc,
             "http" | "h2" => Self::Http,
             "xhttp" | "splithttp" => Self::Xhttp,
+            "httpupgrade" => Self::HttpUpgrade,
             _ => Self::Tcp,
         }
     }
@@ -31,6 +33,7 @@ impl Network {
             Self::Grpc => "grpc",
             Self::Http => "http",
             Self::Xhttp => "xhttp",
+            Self::HttpUpgrade => "httpupgrade",
         }
     }
 }
@@ -100,6 +103,22 @@ pub struct Profile {
     /// Hysteria 2 accepts any certificate when the link says `insecure=1`.
     #[serde(default, skip_serializing_if = "is_false")]
     pub insecure: bool,
+    /// Transport mode: XHTTP (`auto`, `packet-up`, `stream-up`, `stream-one`)
+    /// or gRPC (`gun` or `multi`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+    /// `headerType` of the TCP transport; `http` wraps the stream in HTTP/1.1.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub header_type: Option<String>,
+    /// WebSocket early data size in bytes (`ed` in a share link).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub early_data: Option<u32>,
+    /// Header that carries WebSocket early data (`eh` in a share link).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub early_data_header: Option<String>,
+    /// Ready-made `xhttpSettings.extra` object from a panel.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extra: Option<serde_json::Value>,
 }
 
 fn is_false(value: &bool) -> bool {

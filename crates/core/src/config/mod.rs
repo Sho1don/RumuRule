@@ -528,6 +528,102 @@ mod tests {
     }
 
     #[test]
+    fn tcp_header_obfs_is_emitted() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=tcp&headerType=http&host=cdn.test&path=%2Fobfs&security=tls&sni=cdn.test",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let header = &config["outbounds"][0]["streamSettings"]["tcpSettings"]["header"];
+        assert_eq!(header["type"], "http");
+        assert_eq!(header["request"]["path"][0], "/obfs");
+        assert_eq!(header["request"]["headers"]["Host"][0], "cdn.test");
+    }
+
+    #[test]
+    fn plain_tcp_has_no_header_block() {
+        let profile = parse_link("vless://uuid-1@1.2.3.4:443?security=tls").unwrap();
+        let config = build_config(&profile);
+        assert!(config["outbounds"][0]["streamSettings"]
+            .get("tcpSettings")
+            .is_none());
+    }
+
+    #[test]
+    fn ws_early_data_is_emitted() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=ws&path=%2Fws&host=cdn.test&security=tls&sni=cdn.test&ed=2048&eh=Sec-WebSocket-Protocol",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let ws = &config["outbounds"][0]["streamSettings"]["wsSettings"];
+        assert_eq!(ws["maxEarlyData"], 2048);
+        assert_eq!(ws["earlyDataHeaderName"], "Sec-WebSocket-Protocol");
+    }
+
+    #[test]
+    fn broken_early_data_is_dropped() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=ws&path=%2Fws&security=tls&sni=cdn.test&ed=lots",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        assert!(config["outbounds"][0]["streamSettings"]["wsSettings"]
+            .get("maxEarlyData")
+            .is_none());
+    }
+
+    #[test]
+    fn grpc_multi_mode_is_emitted() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=grpc&serviceName=svc&mode=multi&security=tls&sni=cdn.test",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let grpc = &config["outbounds"][0]["streamSettings"]["grpcSettings"];
+        assert_eq!(grpc["serviceName"], "svc");
+        assert_eq!(grpc["multiMode"], true);
+    }
+
+    #[test]
+    fn xhttp_mode_and_extra_come_from_the_link() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=xhttp&path=%2Fxh&host=cdn.test&mode=packet-up&security=tls&sni=cdn.test&extra=%7B%22xPaddingBytes%22%3A%22100-1000%22%7D",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let xhttp = &config["outbounds"][0]["streamSettings"]["xhttpSettings"];
+        assert_eq!(xhttp["mode"], "packet-up");
+        assert_eq!(xhttp["extra"]["xPaddingBytes"], "100-1000");
+    }
+
+    #[test]
+    fn xhttp_unknown_mode_falls_back_to_auto() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=xhttp&security=tls&sni=cdn.test&mode=teleport",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        assert_eq!(
+            config["outbounds"][0]["streamSettings"]["xhttpSettings"]["mode"],
+            "auto"
+        );
+    }
+
+    #[test]
+    fn httpupgrade_config_sets_host_and_path() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=httpupgrade&path=%2Fup&host=cdn.test&security=tls&sni=cdn.test",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let stream = &config["outbounds"][0]["streamSettings"];
+        assert_eq!(stream["network"], "httpupgrade");
+        assert_eq!(stream["httpupgradeSettings"]["path"], "/up");
+        assert_eq!(stream["httpupgradeSettings"]["host"], "cdn.test");
+    }
+
+    #[test]
     fn inbounds_listen_on_loopback() {
         let profile = parse_link("trojan://pass@example.org:443").unwrap();
         let config = build_config(&profile);

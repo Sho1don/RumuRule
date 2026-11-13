@@ -3,8 +3,8 @@
 use url::Url;
 
 use super::{
-    alpn_list, decode, fragment_name, network_from, query, security_from, split_host_port, Error,
-    Result,
+    alpn_list, decode, early_data, fragment_name, network_from, query, security_from,
+    split_host_port, xhttp_extra, Error, Result,
 };
 use crate::model::Profile;
 
@@ -42,6 +42,17 @@ pub(super) fn parse(rest: &str) -> Result<Profile> {
         obfs_password: None,
         pin_sha256: None,
         insecure: false,
+        mode: q("mode"),
+        header_type: q("headerType"),
+        early_data: early_data(q("ed")),
+        early_data_header: q("eh").or_else(|| q("earlyDataHeaderName")),
+        extra: xhttp_extra(
+            q("extra"),
+            q("xPaddingBytes"),
+            q("scMaxEachPostBytes"),
+            q("scMinPostsIntervalMs"),
+            q("noGRPCHeader"),
+        ),
     })
 }
 
@@ -80,6 +91,32 @@ mod tests {
         let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=splithttp";
         let p = parse_link(link).expect("vless splithttp");
         assert_eq!(p.network, Network::Xhttp);
+    }
+
+    #[test]
+    fn parses_httpupgrade() {
+        let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=httpupgrade&path=%2Fup&host=cdn.test";
+        let p = parse_link(link).expect("vless httpupgrade");
+        assert_eq!(p.network, Network::HttpUpgrade);
+        assert_eq!(p.path.as_deref(), Some("/up"));
+    }
+
+    #[test]
+    fn reads_xhttp_fields_spread_over_the_query() {
+        let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=xhttp&mode=stream-up&xPaddingBytes=100-1000&noGRPCHeader=1";
+        let p = parse_link(link).expect("vless xhttp extra");
+        assert_eq!(p.mode.as_deref(), Some("stream-up"));
+        let extra = p.extra.expect("extra object");
+        assert_eq!(extra["xPaddingBytes"], "100-1000");
+        assert_eq!(extra["noGRPCHeader"], true);
+    }
+
+    #[test]
+    fn reads_ws_early_data() {
+        let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=ws&ed=2048&eh=Sec-WebSocket-Protocol";
+        let p = parse_link(link).expect("vless ws early data");
+        assert_eq!(p.early_data, Some(2048));
+        assert_eq!(p.early_data_header.as_deref(), Some("Sec-WebSocket-Protocol"));
     }
 
     #[test]

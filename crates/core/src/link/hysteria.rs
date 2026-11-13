@@ -51,6 +51,11 @@ pub(super) fn parse(rest: &str) -> Result<Profile> {
         obfs_password: q("obfs-password").or_else(|| q("obfsPassword")),
         pin_sha256: q("pinSHA256").or_else(|| q("pin-sha256")),
         insecure,
+        mode: None,
+        header_type: None,
+        early_data: None,
+        early_data_header: None,
+        extra: None,
     })
 }
 
