@@ -1,6 +1,6 @@
 # RumuRule — project status
 
-Last updated: 2026-11-12. Scope: Linux-first Xray desktop client (proxy and TUN
+Last updated: 2026-11-13. Scope: Linux-first Xray desktop client (proxy and TUN
 modes). macOS is intentionally out of scope.
 
 > Snapshot of what works today and what is still missing. Percentages are
@@ -28,7 +28,8 @@ client installs from a package and TUN works end to end on a live host.
 | System proxy | Mostly | 95% | KDE + GNOME, snapshot and restore after crash; no Windows/WPAD |
 | Latency probes | Mostly | 95% | Proxy GET, TCP, ICMP; `default` / `double` / `keep-alive`; custom test URL |
 | Status tab | Complete | 100% | Connect/Disconnect, current server, live session timer |
-| Settings UI | Complete | 100% | HWID, tunnel mode and TUN status, system proxy, ping options, core version |
+| Settings UI | Complete | 100% | HWID, tunnel mode and TUN status, system proxy, split tunneling, ping options, core version; Ping and Split tunneling fold like server groups |
+| Split tunneling | Mostly | 75% | Domains, IPs and CIDR subnets in Bypass or Only mode, applied to the next connection in both proxy and TUN modes; per-app rules still missing |
 | Tray icon | Works | 95% | Session state in the menu, Open/Disconnect/Quit; closing the window destroys the webview and frees its memory, the tray rebuilds it with the same size, section, server and scroll position; no icon variants per state |
 | Material You / KDE theme | Mostly | 95% | Accent-derived palette, live light/dark switch from `kdeglobals` |
 | Adaptive layout | Mostly | 90% | Down to 360×480; server rows and the dock reflow at phone widths; desktop window only, no mobile target |
@@ -96,7 +97,7 @@ client installs from a package and TUN works end to end on a live host.
 
 | Order | Milestone | Adds |
 | ---: | --- | --- |
-| 1 | 0.9.3 release (version bump, package rebuild) | Public install |
+| 1 | Per-app split tunneling (cgroup v2 + nftables in the helper) | Rules per process, TUN only |
 | 2 | Subscription metadata (user-agent presets, device headers, refresh jitter) | Panels see a familiar client |
 | 3 | TUN polish (kill switch, MTU/DNS settings, reconnect on network change) | Production-grade TUN |
 | 4 | Animation fix | Remove the one-frame flicker |
