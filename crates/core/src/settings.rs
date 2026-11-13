@@ -75,6 +75,35 @@ impl Default for PingMode {
     }
 }
 
+/// Which destinations the split tunnel sends around the tunnel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SplitMode {
+    /// Everything goes through the server.
+    Off,
+    /// The listed domains and addresses go around the tunnel.
+    Bypass,
+    /// Only the listed domains and addresses go through the tunnel.
+    Only,
+}
+
+impl Default for SplitMode {
+    fn default() -> Self {
+        Self::Off
+    }
+}
+
+/// Split tunneling rules, applied to the generated configuration.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SplitTunnel {
+    #[serde(default)]
+    pub mode: SplitMode,
+    /// Domains, IP addresses and CIDR subnets, one per line.
+    #[serde(default)]
+    pub entries: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
@@ -102,6 +131,9 @@ pub struct Settings {
     /// URL requested when a proxy probe is selected.
     #[serde(default = "default_ping_url")]
     pub ping_url: String,
+    /// Destinations that bypass the tunnel, or the only ones allowed into it.
+    #[serde(default)]
+    pub split: SplitTunnel,
 }
 
 impl Default for Settings {
@@ -115,6 +147,7 @@ impl Default for Settings {
             tunnel_mode: TunnelMode::default(),
             show_address: false,
             ping_url: default_ping_url(),
+            split: SplitTunnel::default(),
         }
     }
 }

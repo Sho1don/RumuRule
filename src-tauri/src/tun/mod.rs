@@ -106,27 +106,6 @@ fn service_environment() -> Command {
     command
 }
 
-/// Run the helper through polkit, which asks for the tunnel action once.
-pub fn authorize(app: &AppHandle) -> Result<String, String> {
-    let helper = find_helper()?;
-    let output = service_environment()
-        .arg(&helper)
-        .arg("probe")
-        .output()
-        .map_err(|e| format!("cannot run pkexec: {e}"))?;
-
-    let message = String::from_utf8_lossy(&output.stderr).trim().to_string();
-    if !output.status.success() {
-        let _ = app;
-        return Err(if message.is_empty() {
-            "authorization was cancelled".into()
-        } else {
-            message
-        });
-    }
-    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-}
-
 /// One-time privileged setup: install the helper and the polkit rule that
 /// lets this user start the tunnel without a password prompt.
 pub fn install(app: &AppHandle) -> Result<String, String> {

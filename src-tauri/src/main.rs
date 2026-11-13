@@ -73,7 +73,6 @@ fn main() {
             commands::tunnel::disconnect,
             commands::tunnel::tunnel_status,
             commands::tunnel::tun_prereqs,
-            commands::tunnel::tun_authorize,
             commands::tunnel::helper_install,
             commands::tunnel::setup_state,
             commands::profiles::profiles_list,
@@ -93,6 +92,7 @@ fn main() {
             commands::settings::settings_set_show_address,
             commands::settings::settings_set_system_proxy,
             commands::settings::settings_set_ping,
+            commands::settings::settings_set_split,
             commands::settings::settings_set_tunnel_mode,
             commands::settings::settings_reset_hwid,
             theme::system_theme

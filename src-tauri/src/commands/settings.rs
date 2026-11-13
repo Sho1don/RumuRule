@@ -4,7 +4,9 @@ use std::{path::PathBuf, sync::Mutex};
 
 use tauri::{AppHandle, Emitter, Manager, State};
 
-use rumurule_core::{subscription::Device, Endpoints, PingKind, PingMode, Settings, TunnelMode};
+use rumurule_core::{
+    subscription::Device, Endpoints, PingKind, PingMode, Settings, SplitTunnel, TunnelMode,
+};
 
 use crate::system_proxy::SystemProxy;
 use crate::xray::{Status, XrayManager, LOG_EVENT};
@@ -126,6 +128,24 @@ pub fn settings_set_tunnel_mode(
     }
     let mut settings = state.settings.lock().expect("settings poisoned");
     settings.tunnel_mode = mode;
+    state.persist(&settings)?;
+    Ok(settings.clone())
+}
+
+/// Split tunneling: which destinations skip the tunnel, or only use it.
+#[tauri::command]
+pub fn settings_set_split(
+    state: State<'_, SettingsStore>,
+    mode: rumurule_core::SplitMode,
+    entries: Vec<String>,
+) -> Result<Settings, String> {
+    let entries = entries
+        .into_iter()
+        .map(|entry| entry.trim().to_string())
+        .filter(|entry| !entry.is_empty())
+        .collect();
+    let mut settings = state.settings.lock().expect("settings poisoned");
+    settings.split = SplitTunnel { mode, entries };
     state.persist(&settings)?;
     Ok(settings.clone())
 }

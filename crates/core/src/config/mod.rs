@@ -2,7 +2,10 @@
 
 mod outbound;
 mod routing;
+mod split;
 mod stream;
+
+pub use split::apply as apply_split;
 
 use std::net::{IpAddr, ToSocketAddrs};
 

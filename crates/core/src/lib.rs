@@ -14,7 +14,7 @@ pub mod subscription;
 pub use link::{parse_link, Error};
 pub use model::{Entry, Network, Profile, Security, Subscription};
 pub use proxy::Endpoints;
-pub use settings::{PingKind, PingMode, Settings, TunnelMode};
+pub use settings::{PingKind, PingMode, Settings, SplitMode, SplitTunnel, TunnelMode};
 pub use store::Store;
 pub use subscription::{fetch, panel_error, parse_configs, parse_subscription, Device, Imported};
 

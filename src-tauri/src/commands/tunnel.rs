@@ -28,10 +28,12 @@ pub fn connect(
     link: String,
 ) -> Result<Status, String> {
     let profile = parse_link(&link).map_err(|e| e.to_string())?;
-    let mode = settings.snapshot().tunnel_mode;
-    let status = match mode {
-        TunnelMode::Tun => state.start_tun(&app, &rumurule_core::config::build_config(&profile))?,
-        TunnelMode::Proxy => state.start(&app, &profile)?,
+    let snapshot = settings.snapshot();
+    let mut config = rumurule_core::config::build_config(&profile);
+    rumurule_core::config::apply_split(&mut config, &snapshot.split);
+    let status = match snapshot.tunnel_mode {
+        TunnelMode::Tun => state.start_tun(&app, &config)?,
+        TunnelMode::Proxy => state.start_config(&app, &config)?,
     };
 
     apply_proxy(&app, &settings, &proxy, &status);
@@ -61,12 +63,6 @@ pub fn tunnel_status(state: State<'_, XrayManager>) -> Result<Status, String> {
 #[tauri::command]
 pub fn tun_prereqs(app: AppHandle) -> Prereqs {
     tun::prereqs(&app)
-}
-
-/// Ask polkit for the tunnel action once and report the helper environment.
-#[tauri::command(async)]
-pub fn tun_authorize(app: AppHandle) -> Result<String, String> {
-    tun::authorize(&app)
 }
 
 /// One-time privileged setup for passwordless tunnel starts.
