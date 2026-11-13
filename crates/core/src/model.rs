@@ -10,6 +10,7 @@ pub enum Network {
     Ws,
     Grpc,
     Http,
+    Xhttp,
 }
 
 impl Network {
@@ -18,6 +19,7 @@ impl Network {
             "ws" | "websocket" => Self::Ws,
             "grpc" | "gun" => Self::Grpc,
             "http" | "h2" => Self::Http,
+            "xhttp" | "splithttp" => Self::Xhttp,
             _ => Self::Tcp,
         }
     }
@@ -28,6 +30,7 @@ impl Network {
             Self::Ws => "ws",
             Self::Grpc => "grpc",
             Self::Http => "http",
+            Self::Xhttp => "xhttp",
         }
     }
 }

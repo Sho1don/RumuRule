@@ -48,6 +48,16 @@ pub(super) fn settings(profile: &Profile) -> Value {
                 }),
             );
         }
+        Network::Xhttp => {
+            stream.insert(
+                "xhttpSettings".into(),
+                json!({
+                    "path": profile.path.as_deref().filter(|p| !p.is_empty()).unwrap_or("/"),
+                    "host": profile.host.as_deref().unwrap_or(profile.server_name()),
+                    "mode": "auto"
+                }),
+            );
+        }
     }
 
     match profile.security {
@@ -58,9 +68,14 @@ pub(super) fn settings(profile: &Profile) -> Value {
             if !profile.alpn.is_empty() {
                 tls.insert("alpn".into(), json!(profile.alpn));
             }
-            if let Some(fp) = profile.fingerprint.as_deref().filter(|f| !f.is_empty()) {
-                tls.insert("fingerprint".into(), json!(fp));
-            }
+            // An empty fingerprint leaves Go's own TLS client hello, which
+            // stands out next to a browser. Chrome is the safest default.
+            let fp = profile
+                .fingerprint
+                .as_deref()
+                .filter(|f| !f.is_empty())
+                .unwrap_or("chrome");
+            tls.insert("fingerprint".into(), json!(fp));
             stream.insert("security".into(), json!("tls"));
             stream.insert("tlsSettings".into(), Value::Object(tls));
         }

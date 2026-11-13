@@ -488,6 +488,46 @@ mod tests {
     }
 
     #[test]
+    fn xhttp_config_sets_host_and_mode() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=xhttp&path=%2Fxh&host=cdn.test&security=tls&sni=cdn.test",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        let stream = &config["outbounds"][0]["streamSettings"];
+        assert_eq!(stream["network"], "xhttp");
+        assert_eq!(stream["xhttpSettings"]["path"], "/xh");
+        assert_eq!(stream["xhttpSettings"]["host"], "cdn.test");
+        assert_eq!(stream["xhttpSettings"]["mode"], "auto");
+    }
+
+    #[test]
+    fn tls_defaults_to_a_browser_fingerprint() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=ws&path=%2Fws&host=cdn.test&security=tls&sni=cdn.test",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        assert_eq!(
+            config["outbounds"][0]["streamSettings"]["tlsSettings"]["fingerprint"],
+            "chrome"
+        );
+    }
+
+    #[test]
+    fn tls_keeps_the_requested_fingerprint() {
+        let profile = parse_link(
+            "vless://uuid-1@1.2.3.4:443?type=ws&path=%2Fws&host=cdn.test&security=tls&sni=cdn.test&fp=firefox",
+        )
+        .unwrap();
+        let config = build_config(&profile);
+        assert_eq!(
+            config["outbounds"][0]["streamSettings"]["tlsSettings"]["fingerprint"],
+            "firefox"
+        );
+    }
+
+    #[test]
     fn inbounds_listen_on_loopback() {
         let profile = parse_link("trojan://pass@example.org:443").unwrap();
         let config = build_config(&profile);

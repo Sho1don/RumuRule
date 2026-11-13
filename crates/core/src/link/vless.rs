@@ -1,4 +1,4 @@
-//! `vless://` links (plain TCP, WS, gRPC, REALITY).
+//! `vless://` links (plain TCP, WS, gRPC, HTTP, XHTTP, REALITY).
 
 use url::Url;
 
@@ -62,6 +62,24 @@ mod tests {
         assert_eq!(p.name, "Node A");
         assert_eq!(p.service_name.as_deref(), Some("svc"));
         assert_eq!(p.public_key.as_deref(), Some("PUBKEY"));
+    }
+
+    #[test]
+    fn parses_xhttp() {
+        let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=xhttp&path=%2Fxh&host=cdn.test&security=reality&sni=cdn.test&pbk=PUB&sid=ab12&fp=chrome";
+        let p = parse_link(link).expect("vless xhttp");
+        assert_eq!(p.network, Network::Xhttp);
+        assert_eq!(p.path.as_deref(), Some("/xh"));
+        assert_eq!(p.host.as_deref(), Some("cdn.test"));
+        assert_eq!(p.fingerprint.as_deref(), Some("chrome"));
+        assert_eq!(p.security, Security::Reality);
+    }
+
+    #[test]
+    fn accepts_splithttp_alias() {
+        let link = "vless://aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee@1.2.3.4:443?type=splithttp";
+        let p = parse_link(link).expect("vless splithttp");
+        assert_eq!(p.network, Network::Xhttp);
     }
 
     #[test]
