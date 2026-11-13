@@ -51,7 +51,7 @@ function describe(profile, showAddress) {
 }
 
 export function pingLabel(state) {
-  if (!state) return "—";
+  if (!state) return "–";
   if (state.skipped) return "udp";
   if (state.pending) return "…";
   if (state.ms !== undefined) return `${state.ms} ms`;

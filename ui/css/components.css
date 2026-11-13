@@ -71,6 +71,58 @@ body:has(#view-home[data-active="true"]) #state {
   min-width: 0;
 }
 
+/* A tiny "i" that carries the explanation a subtitle used to hold. */
+.hint {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 6px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: 50%;
+  color: var(--md-on-surface-variant);
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: 1px;
+  cursor: help;
+}
+
+/* A section that folds away like a server group. */
+.collapse {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.collapse-body {
+  display: grid;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+.collapse[data-collapsed="true"] > .collapse-body {
+  display: none;
+}
+
+.collapse[data-collapsed="true"] .group-chevron {
+  transform: rotate(-90deg);
+}
+
+.collapse > .group-toggle {
+  justify-content: flex-start;
+}
+
+.collapse > .group-toggle .group-count {
+  margin-left: auto;
+}
+
+.status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .field-label {
   font-size: 0.8rem;
   font-weight: 500;
@@ -127,9 +179,28 @@ select {
 
 textarea {
   resize: vertical;
-  font-family: ui-monospace, "JetBrains Mono", monospace;
-  font-size: max(15px, 0.85rem);
   line-height: 1.5;
+}
+
+/* The native dropdown arrow is a GTK widget and breaks the Material surface,
+   so the chevron is drawn from two triangles in the text color. */
+select {
+  appearance: none;
+  padding-right: 44px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 16px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+select option {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
 }
 
 textarea:focus,
@@ -154,6 +225,18 @@ button {
 button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* Keyboard focus: the same ring the section dock uses. `:focus-visible` keeps
+   it away from mouse and touch users, so the flat Material surfaces stay
+   clean, and the ring only shows up when it actually helps. */
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
 }
 
 .filled {

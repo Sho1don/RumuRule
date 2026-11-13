@@ -76,7 +76,7 @@
           <span id="count" class="muted">0 saved</span>
         </div>
         <div id="servers" class="groups"></div>
-        <p id="servers-empty" class="muted empty">No servers yet — add a link or a subscription.</p>
+        <p id="servers-empty" class="muted empty">No servers yet – add a link or a subscription.</p>
         <div class="divider"></div>
         <div id="add-source" class="inline">
           <input id="sub-url" type="text" spellcheck="false"
@@ -94,8 +94,8 @@
         </div>
         <label class="switch">
           <span class="item-main">
-            <span class="item-title">HWID</span>
-            <span class="muted">Panels may bind the subscription to one device.</span>
+            <span class="item-title">HWID<span class="hint"
+              title="Panels may bind the subscription to one device.">i</span></span>
           </span>
           <input id="hwid-toggle" type="checkbox">
         </label>
@@ -106,29 +106,23 @@
         <div class="divider"></div>
         <div class="row between">
           <h3 class="section-title">Tunnel</h3>
-          <span id="tun-status" class="muted">checking…</span>
+          <span class="status-line">
+            <span id="tun-status" class="muted">checking…</span>
+            <span id="tun-info" class="hint" hidden>i</span>
+          </span>
         </div>
         <label class="switch">
           <span class="item-main">
-            <span class="item-title">TUN</span>
-            <span class="muted">Route every application through the server.</span>
+            <span class="item-title">TUN<span class="hint"
+              title="Route every application through the server.">i</span></span>
           </span>
           <input id="tun-toggle" type="checkbox">
         </label>
-        <p class="muted">
-          The local proxy stays available either way: SOCKS 127.0.0.1:10808,
-          HTTP 127.0.0.1:10809.
-        </p>
-        <div id="tun-extra" class="ping-extra" hidden>
-          <p id="tun-detail" class="muted"></p>
-          <button id="tun-authorize" class="tonal" type="button">Allow tunnel</button>
-          <button id="tun-setup" class="text" type="button">Set up without password</button>
-        </div>
         <div class="divider"></div>
         <label class="switch">
           <span class="item-main">
-            <span class="item-title">System proxy</span>
-            <span class="muted">Point desktop apps at 127.0.0.1:10809 while connected.</span>
+            <span class="item-title">System proxy<span class="hint"
+              title="Point desktop apps at 127.0.0.1:10809 while connected.">i</span></span>
           </span>
           <input id="proxy-toggle" type="checkbox">
         </label>
@@ -136,53 +130,93 @@
         <div class="divider"></div>
         <label class="switch">
           <span class="item-main">
-            <span class="item-title">Show server addresses</span>
-            <span class="muted">Reveal IP endpoints of servers in the list and on the status tab.</span>
+            <span class="item-title">Show server addresses<span class="hint"
+              title="Reveal IP endpoints in the list and on the status tab.">i</span></span>
           </span>
           <input id="show-ip-toggle" type="checkbox">
         </label>
         <div class="divider"></div>
-        <div class="row between">
-          <h3 class="section-title">Ping</h3>
-          <span class="muted">how latency is measured</span>
+        <div id="split-block" class="collapse">
+          <button id="split-toggle" class="group-toggle" type="button" aria-expanded="true">
+            <span class="group-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </span>
+            <span class="group-title">Split tunneling</span>
+            <span class="hint"
+              title="Applied to the next connection. Geo lists are not bundled and are ignored.">i</span>
+            <span id="split-state" class="group-count">off</span>
+          </button>
+          <div class="collapse-body">
+            <label class="field">
+              <span class="field-label">Mode</span>
+              <select id="split-mode">
+                <option value="off">Off – everything through the tunnel</option>
+                <option value="bypass">Bypass – the list skips the tunnel</option>
+                <option value="only">Only – the list uses the tunnel</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Domains, IPs and subnets</span>
+              <textarea id="split-entries" rows="4" spellcheck="false"
+                placeholder="one entry per line&#10;example.com&#10;10.0.0.0/8"></textarea>
+            </label>
+          </div>
         </div>
-        <div class="choices" role="radiogroup" aria-label="Ping method">
-          <label class="choice">
-            <input type="radio" name="ping-kind" value="proxy">
-            <span class="item-main">
-              <span class="item-title">Via proxy</span>
-              <span class="muted">Download the test URL through the server.</span>
+        <div class="divider"></div>
+        <div id="ping-block" class="collapse">
+          <button id="ping-toggle" class="group-toggle" type="button" aria-expanded="true">
+            <span class="group-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
             </span>
-          </label>
-          <label class="choice">
-            <input type="radio" name="ping-kind" value="tcp">
-            <span class="item-main">
-              <span class="item-title">TCP</span>
-              <span class="muted">Direct TCP handshake with the server port.</span>
-            </span>
-          </label>
-          <label class="choice">
-            <input type="radio" name="ping-kind" value="icmp">
-            <span class="item-main">
-              <span class="item-title">ICMP</span>
-              <span class="muted">System ping to the server host.</span>
-            </span>
-          </label>
-        </div>
-        <div id="ping-proxy" class="ping-extra" hidden>
-          <label class="field">
-            <span class="field-label">Mode</span>
-            <select id="ping-mode">
-              <option value="default">Default</option>
-              <option value="double">Double</option>
-              <option value="keepalive">Keep-alive</option>
-            </select>
-          </label>
-          <label class="field">
-            <span class="field-label">Test URL</span>
-            <input id="ping-url" type="url" spellcheck="false"
-              placeholder="https://www.gstatic.com/generate_204">
-          </label>
+            <span class="group-title">Ping</span>
+            <span id="ping-summary" class="group-count">TCP</span>
+          </button>
+          <div id="ping-body" class="collapse-body">
+            <div class="choices" role="radiogroup" aria-label="Ping method">
+              <label class="choice">
+                <input type="radio" name="ping-kind" value="proxy">
+                <span class="item-main">
+                  <span class="item-title">Via proxy</span>
+                  <span class="muted">Download the test URL through the server.</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="ping-kind" value="tcp">
+                <span class="item-main">
+                  <span class="item-title">TCP</span>
+                  <span class="muted">Direct TCP handshake with the server port.</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="ping-kind" value="icmp">
+                <span class="item-main">
+                  <span class="item-title">ICMP</span>
+                  <span class="muted">System ping to the server host.</span>
+                </span>
+              </label>
+            </div>
+            <div id="ping-proxy" class="ping-extra" hidden>
+              <label class="field">
+                <span class="field-label">Mode</span>
+                <select id="ping-mode">
+                  <option value="default">Default</option>
+                  <option value="double">Double</option>
+                  <option value="keepalive">Keep-alive</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Test URL</span>
+                <input id="ping-url" type="url" spellcheck="false"
+                  placeholder="https://www.gstatic.com/generate_204">
+              </label>
+            </div>
+          </div>
         </div>
         <div class="divider"></div>
         <div class="row between">

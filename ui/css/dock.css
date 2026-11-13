@@ -40,11 +40,6 @@
   background: var(--md-surface-container);
 }
 
-.tab:focus-visible {
-  outline: 2px solid var(--md-primary);
-  outline-offset: 2px;
-}
-
 .tab-icon {
   display: grid;
   place-items: center;

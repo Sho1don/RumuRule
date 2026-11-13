@@ -263,7 +263,7 @@ async function guard(task, { connect = false } = {}) {
 function connectFailure(error) {
   const text = String(error ?? "").trim();
   if (/not pass traffic|does not pass/i.test(text)) {
-    return "Server is not responding — try another one.";
+    return "Server is not responding – try another one.";
   }
   if (/cancelled|canceled|dismissed/i.test(text)) return "Connection cancelled.";
   if (/timed out|timeout/i.test(text)) return "Connection timed out.";
@@ -579,7 +579,7 @@ listen("tunnel-progress", (event) => {
 /** The backend fuse stopped a session the user did not stop. */
 listen("tunnel-ended", (event) => {
   const mode = event.payload?.mode === "tun" ? "TUN" : "proxy";
-  showNotice(`Connection lost (${mode}) — settings restored`);
+  showNotice(`Connection lost (${mode}) – settings restored`);
   connectProgress = null;
   refreshStatus().catch(() => {});
 });

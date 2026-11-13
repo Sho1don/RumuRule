@@ -82,6 +82,15 @@ sudo ./scripts/install-helper.sh
 
 How the helper owns the tunnel, resolves outbound domains and handles FakeDNS, MTU and shutdown is described in [`docs/tun.md`](docs/tun.md).
 
+## Split tunneling
+
+**Settings -> Split tunneling** takes a list of domains, IP addresses and CIDR subnets, one per line, and applies it to the next connection:
+
+- **Bypass** sends the listed destinations around the tunnel, for example a bank, a local printer or `192.168.0.0/16`.
+- **Only** does the inverse: the listed destinations use the tunnel and everything else leaves through the physical link.
+
+The list becomes Xray routing rules, so it works in both proxy and TUN mode. Private ranges and loopback already skip the tunnel; a TUN session also keeps port 53 on the tunnel resolver. `full:`, `domain:` and `regexp:` prefixes are passed through as native matchers; `geosite:` and `geoip:` are ignored because the package does not ship the geo data files.
+
 ## Privacy
 
 The status tab and the server list hide IP endpoints by default: they show the label, protocol and transport only. **Settings -> Show server addresses** reveals the `server:port` details everywhere.
@@ -104,12 +113,12 @@ cargo run -p rumurule-core --example fetch_sub -- https://example.com/sub
 
 ## Layout
 
-- `crates/core/` — protocol, config and storage logic, no Tauri dependency, unit tested.
-- `src-tauri/` — thin Tauri bridge: commands, system proxy, Xray sidecar, TUN session, KDE theme.
-- `ui/` — frontend: ES modules in `js/`, styles in `css/`.
-- `helper/` — the small root process that owns Xray in TUN mode.
-- `packaging/` — PKGBUILD, `.desktop`, polkit action and icons.
-- `scripts/` — `fetch-xray.sh`, `install-helper.sh`, `tun-test.sh`.
+- `crates/core/` – protocol, config and storage logic, no Tauri dependency, unit tested.
+- `src-tauri/` – thin Tauri bridge: commands, system proxy, Xray sidecar, TUN session, KDE theme.
+- `ui/` – frontend: ES modules in `js/`, styles in `css/`.
+- `helper/` – the small root process that owns Xray in TUN mode.
+- `packaging/` – PKGBUILD, `.desktop`, polkit action and icons.
+- `scripts/` – `fetch-xray.sh`, `install-helper.sh`, `tun-test.sh`.
 
 ## License
 
