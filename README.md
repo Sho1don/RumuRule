@@ -8,18 +8,18 @@
 
 ## Install
 
-Download `rumurule-0.9.2-1-x86_64.pkg.tar.zst` from the
-[0.9.2 pre-release](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.2)
+Download `rumurule-0.9.3-1-x86_64.pkg.tar.zst` from the
+[0.9.3 pre-release](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.3)
 and install it:
 
 ```sh
-sudo pacman -U rumurule-0.9.2-1-x86_64.pkg.tar.zst
+sudo pacman -U rumurule-0.9.3-1-x86_64.pkg.tar.zst
 ```
 
 On Debian 12+, Ubuntu 23.10+ and derivatives, take
-`rumurule_0.9.2-1_amd64.deb` from the same release and use
+`rumurule_0.9.3-1_amd64.deb` from the same release and use
 ```sh
-sudo apt install ./rumurule_0.9.2-1_amd64.deb
+sudo apt install ./rumurule_0.9.3-1_amd64.deb
 ```
 
 The package installs the GUI, the helper, the polkit action and a pinned Xray

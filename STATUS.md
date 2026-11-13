@@ -38,7 +38,7 @@ client installs from a package and TUN works end to end on a live host.
 | Packaging and AUR | Mostly | 85% | `packaging/` holds the PKGBUILD, desktop entry, icons and polkit action; the package ships a pinned Xray core and installs cleanly with `pacman -U`; AUR upload pending |
 | Windows support | Not started | 0% | Linux code paths only |
 | Documentation and licensing | Complete | 100% | README with a Russian translation, `docs/tun.md`, screenshots and a recording in `examples/`, AGPL-3.0 `LICENSE`, `NOTICE` |
-| Automated tests | Mostly | 85% | 47 tests (42 core, 5 app); no UI or TUN integration tests |
+| Automated tests | Mostly | 88% | 70 tests (65 core, 5 app); no UI or TUN integration tests |
 
 ## What is already proven live
 
@@ -96,7 +96,7 @@ client installs from a package and TUN works end to end on a live host.
 
 | Order | Milestone | Adds |
 | ---: | --- | --- |
-| 1 | 0.9.2 release (version bump, package rebuild, AUR upload) | Public install |
+| 1 | 0.9.3 release (version bump, package rebuild) | Public install |
 | 2 | Subscription metadata (user-agent presets, device headers, refresh jitter) | Panels see a familiar client |
 | 3 | TUN polish (kill switch, MTU/DNS settings, reconnect on network change) | Production-grade TUN |
 | 4 | Animation fix | Remove the one-frame flicker |

@@ -8,18 +8,18 @@
 
 ## Установка
 
-Скачайте `rumurule-0.9.2-1-x86_64.pkg.tar.zst` из
-[pre-release 0.9.2](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.2)
+Скачайте `rumurule-0.9.3-1-x86_64.pkg.tar.zst` из
+[pre-release 0.9.3](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.3)
 и установите:
 
 ```sh
-sudo pacman -U rumurule-0.9.2-1-x86_64.pkg.tar.zst
+sudo pacman -U rumurule-0.9.3-1-x86_64.pkg.tar.zst
 ```
 
 В Debian 12+, Ubuntu 23.10+ и производных возьмите из того же релиза
-`rumurule_0.9.2-1_amd64.deb` и выполните
+`rumurule_0.9.3-1_amd64.deb` и выполните
 ```sh
-sudo apt install ./rumurule_0.9.2-1_amd64.deb
+sudo apt install ./rumurule_0.9.3-1_amd64.deb
 ```
 
 Пакет ставит интерфейс, helper, polkit-действие и закреплённое ядро Xray в `/usr`.
