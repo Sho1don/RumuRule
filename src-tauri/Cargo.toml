@@ -17,3 +17,7 @@ libc = "0.2"
 # Same GLib the GTK stack already links; used to filter one library notice.
 glib = "0.18"
 rumurule-core = { path = "../crates/core" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18"
+webkit2gtk = "2"

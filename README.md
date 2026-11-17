@@ -9,7 +9,7 @@
 ## Install
 
 Download `rumurule-0.9.3-1-x86_64.pkg.tar.zst` from the
-[0.9.3 pre-release](https://github.com/Sho1don/RumuRule/releases/tag/v0.9.3)
+[0.9.3 pre-release](https://github.com/Sho1don/rumurule/releases/tag/v0.9.3)
 and install it:
 
 ```sh
@@ -47,6 +47,7 @@ Packages install the same layout into `/usr/bin`, `/usr/lib/rumurule` and `/usr/
 - Paste a `vless://`, `vmess://`, `trojan://` or `ss://` link, or a subscription URL. Subscriptions may return a link list (plain or base64) or a JSON array of ready-made Xray configs; both are imported.
 - A panel's `profile-title` header becomes the group name. Links that are not part of a subscription stay under **Saved servers**.
 - Each subscription header collapses its list, shows the server count and has its own latency and refresh buttons. Its `⋯` menu offers test, refresh, rename and remove; a server's menu offers test, rename, pin and remove.
+- **Settings -> Tunnel -> Check all** probes every server through the tunnel with the current split rules behind a dimmed overlay and lands on Servers, then marks each row: ✓ works, ? slow or answered on the second try, ✗ dead. Hover a mark for the reason.
 - Each row shows a latency probe. **Settings -> Ping** picks the method: an HTTP GET through the server, a direct TCP handshake, or system ICMP. The proxy probe starts a throwaway Xray instance and supports `default`, `double` and `keep-alive` modes plus a custom test URL. Hysteria is UDP-based, so TCP and proxy probes show `udp`; ICMP still works.
 - Subscription requests carry a stable device id (HWID) by default, because some panels bind a subscription to one device. Toggle it in **Settings**; **Reset** generates a new id.
 - Saved servers live in `~/.config/slop.rumurule/profiles.json`, settings in `settings.json`.

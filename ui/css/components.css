@@ -285,6 +285,7 @@ button:not(:disabled):hover {
   padding: 0;
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .list:empty {
@@ -297,10 +298,11 @@ button:not(:disabled):hover {
 
 .item {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 6px 12px;
+  min-width: 0;
   padding: 8px 8px 8px clamp(12px, 1.8vw, 16px);
   border-radius: clamp(14px, 2vw, 18px);
   background: var(--md-surface);
@@ -341,6 +343,42 @@ button:not(:disabled):hover {
   height: 14px;
 }
 
+/* Health of a server from the last full check: alive, slow, dead. */
+.check-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+}
+
+.check-mark svg {
+  width: 17px;
+  height: 17px;
+}
+
+.check-mark[data-state="ok"] {
+  color: var(--md-success);
+}
+
+.check-mark[data-state="barely"] {
+  color: var(--md-warning);
+}
+
+.check-mark[data-state="dead"] {
+  color: var(--md-error);
+}
+
+.check-mark[data-state="checking"] {
+  color: var(--md-on-surface-variant);
+  opacity: 0.6;
+}
+
+.check-mark[data-state="checking"] svg {
+  animation: check-rotate 0.9s linear infinite;
+}
+
 .item-live {
   flex: 0 0 auto;
   padding: 1px 8px;
@@ -361,7 +399,7 @@ button:not(:disabled):hover {
 .item-main {
   display: grid;
   gap: 2px;
-  flex: 1 1 200px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -387,8 +425,9 @@ button:not(:disabled):hover {
 
 .item-actions {
   display: flex;
+  align-items: center;
   gap: 2px;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   margin-left: auto;
 }
 
@@ -761,6 +800,63 @@ pre {
 
 .menu-item.danger {
   color: var(--md-error);
+}
+
+/* Full-window progress while every server is probed; the list stays dimmed
+   behind it, so the page does not jump when the marks arrive. */
+.check-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.check-overlay[hidden] {
+  display: none;
+}
+
+.check-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 26px;
+  border-radius: 28px;
+  background: var(--md-surface-container-high);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
+}
+
+.check-spinner svg {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+.check-indicator-shape {
+  fill: var(--md-primary);
+}
+
+.check-text {
+  display: grid;
+  gap: 2px;
+}
+
+.check-title {
+  font-weight: 600;
+}
+
+@keyframes check-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check-mark[data-state="checking"] svg {
+    animation-duration: 3s;
+  }
 }
 
 .modal {

@@ -118,6 +118,16 @@
           </span>
           <input id="tun-toggle" type="checkbox">
         </label>
+        <div class="switch">
+          <span class="item-main">
+            <span class="item-title-row">
+              <span class="item-title">Server health</span>
+              <span class="hint"
+                title="Probe every server through the tunnel with the current split rules. The marks appear in Servers.">i</span>
+            </span>
+          </span>
+          <button id="check-all" class="tonal" type="button">Check all</button>
+        </div>
         <div class="divider"></div>
         <label class="switch">
           <span class="item-main">
@@ -320,6 +330,22 @@
         <button id="welcome-later" class="text" type="button">Later</button>
         <button id="welcome-setup" class="filled" type="button">Set up once</button>
       </div>
+    </div>
+  </div>
+
+  <div id="check-overlay" class="check-overlay" hidden>
+    <div class="check-card" role="status" aria-live="polite">
+      <span class="check-spinner" aria-hidden="true">
+        <svg viewBox="0 0 48 48">
+          <g class="check-indicator-rotor">
+            <path class="check-indicator-shape"></path>
+          </g>
+        </svg>
+      </span>
+      <span class="check-text">
+        <span class="check-title">Checking servers</span>
+        <span id="check-count" class="muted"></span>
+      </span>
     </div>
   </div>
 

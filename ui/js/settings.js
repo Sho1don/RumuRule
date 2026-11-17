@@ -122,6 +122,8 @@ async function saveSplit() {
     current = settings;
     splitState.textContent = splitSummaryText(mode, entries.length);
     appendLog(`split tunneling: ${mode}, ${entries.length} entries`);
+    // Health marks were measured against the old rules.
+    window.dispatchEvent(new CustomEvent("rumurule:split-changed"));
   } catch (error) {
     appendLog(`split error: ${error}`);
   }

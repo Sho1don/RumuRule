@@ -20,6 +20,8 @@
   --md-error: #ba1a1a;
   --md-error-container: #ffdad6;
   --md-on-error-container: #410002;
+  --md-success: #2e6b40;
+  --md-warning: #8a5a00;
 
   /* Fluid spacing: one value drives the whole layout. */
   --gap: clamp(10px, 1.6vw, 16px);
@@ -48,5 +50,7 @@
     --md-error: #ffb4ab;
     --md-error-container: #93000a;
     --md-on-error-container: #ffdad6;
+    --md-success: #8fd8a8;
+    --md-warning: #ffd27d;
   }
 }

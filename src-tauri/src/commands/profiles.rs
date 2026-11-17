@@ -21,6 +21,12 @@ pub struct Profiles {
 
 impl Profiles {
     /// Copy of a saved entry, including any ready-made subscription config.
+    /// Every saved entry with its full config, for batch probes.
+    pub fn entries(&self) -> Vec<Entry> {
+        let store = self.store.lock().expect("profiles poisoned");
+        store.entries.clone()
+    }
+
     pub fn entry(&self, id: &str) -> Option<Entry> {
         let store = self.store.lock().expect("profiles poisoned");
         store

@@ -44,9 +44,76 @@ fn build(app: &AppHandle) {
         .build();
     match built {
         Ok(window) => {
+            lock_zoom(&window);
             let _ = window.set_focus();
         }
         Err(error) => eprintln!("[window] {error}"),
+    }
+}
+
+/// Keep touchscreens from zooming the page. WebKitGTK runs pinch-to-zoom in
+/// its own event controller on the web view, below the page, so CSS and JS
+/// cannot cancel it; the controller itself has to be switched off. The window
+/// is rebuilt after a tray close, hence the call from `build` as well.
+pub fn lock_zoom(window: &tauri::WebviewWindow) {
+    #[cfg(target_os = "linux")]
+    linux::lock_zoom(window);
+    #[cfg(not(target_os = "linux"))]
+    let _ = window;
+}
+
+#[cfg(target_os = "linux")]
+mod linux {
+    use std::ffi::CString;
+
+    use gtk::prelude::*;
+    use webkit2gtk::WebViewExt;
+
+    /// WebKit stores its pinch gesture on the view under this name.
+    const ZOOM_GESTURE: &str = "wk-view-zoom-gesture";
+
+    pub fn lock_zoom(window: &tauri::WebviewWindow) {
+        let Ok(gtk_window) = window.gtk_window() else {
+            return;
+        };
+        let Some(view) = find_webview(gtk_window.upcast_ref::<gtk::Widget>()) else {
+            eprintln!("[window] web view not found for the zoom lock");
+            return;
+        };
+
+        let key = CString::new(ZOOM_GESTURE).expect("static key");
+        let gesture =
+            unsafe { glib::gobject_ffi::g_object_get_data(view.as_ptr().cast(), key.as_ptr()) };
+        if gesture.is_null() {
+            eprintln!("[window] pinch gesture not found; zoom is reset instead");
+        } else {
+            // GTK_PHASE_NONE takes the controller out of event delivery.
+            unsafe {
+                gtk::ffi::gtk_event_controller_set_propagation_phase(
+                    gesture.cast(),
+                    gtk::ffi::GTK_PHASE_NONE,
+                );
+            }
+        }
+
+        // Belt and braces: if a WebKit update renames that key, the page still
+        // stays at 100%. Nothing else in the app sets a zoom level.
+        view.connect_zoom_level_notify(|view| {
+            if (view.zoom_level() - 1.0).abs() > f64::EPSILON {
+                view.set_zoom_level(1.0);
+            }
+        });
+    }
+
+    fn find_webview(widget: &gtk::Widget) -> Option<webkit2gtk::WebView> {
+        if let Some(view) = widget.downcast_ref::<webkit2gtk::WebView>() {
+            return Some(view.clone());
+        }
+        let container = widget.downcast_ref::<gtk::Container>()?;
+        container
+            .children()
+            .into_iter()
+            .find_map(|child| find_webview(&child))
     }
 }
 

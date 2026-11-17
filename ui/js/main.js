@@ -1,12 +1,13 @@
 // Application wiring: state, commands and event handlers.
 
 import { invoke, listen } from "./api.js";
+import { startCheckIndicator, stopCheckIndicator } from "./check-indicator.js";
 import { appendLog } from "./log.js";
 import { askName, openMenu } from "./menu.js";
 import { initMotion } from "./motion.js";
 import { pingLabel, pingTone, renderServers } from "./render.js";
 import { initSettings } from "./settings.js";
-import { initTabs } from "./tabs.js";
+import { initTabs, showTab } from "./tabs.js";
 import { initTheme } from "./theme.js";
 import { initWelcome } from "./welcome.js";
 
@@ -25,6 +26,9 @@ const homeConnect = document.querySelector("#home-connect");
 const serversRoot = document.querySelector("#servers");
 const subInput = document.querySelector("#sub-url");
 const addSubButton = document.querySelector("#add-sub");
+const checkAllButton = document.querySelector("#check-all");
+const checkOverlay = document.querySelector("#check-overlay");
+const checkCount = document.querySelector("#check-count");
 
 const COLLAPSED_KEY = "rumurule.collapsed";
 const LAST_KEY = "rumurule.last";
@@ -36,6 +40,9 @@ let connectedId = null;
 let busy = false;
 let pings = new Map();
 let pingGeneration = 0;
+/** Last health of every server; empty until a full check has run. */
+let checks = new Map();
+let checkRunning = false;
 let pingKind = "tcp";
 let collapsed = new Set(loadCollapsed());
 let statusInfo = null;
@@ -86,6 +93,7 @@ function render() {
     connectedId,
     targetEntry()?.id ?? null,
     pings,
+    checks,
     collapsed,
     showAddress,
   );
@@ -270,6 +278,47 @@ function connectFailure(error) {
   if (/unreachable|no route/i.test(text)) return "Network is unreachable.";
   if (/not installed|missing/i.test(text)) return "The tunnel helper is not installed.";
   return text.length > 160 ? `${text.slice(0, 160)}…` : text;
+}
+
+/** Dim the window while every server is probed. */
+function showCheckOverlay(done, total) {
+  checkOverlay.hidden = false;
+  checkCount.textContent = total ? `${done}/${total}` : "";
+  startCheckIndicator();
+}
+
+function hideCheckOverlay() {
+  checkOverlay.hidden = true;
+  stopCheckIndicator();
+}
+
+/** Test every server through the tunnel, with the split rules in place. */
+async function checkAllServers() {
+  if (checkRunning || !entries.length) return;
+  checkRunning = true;
+  // A full check replaces the stale latency numbers; a red "fail" beside a
+  // green mark would read as a contradiction.
+  pings.clear();
+  pingGeneration += 1;
+  checks = new Map(
+    entries.map((entry) => [entry.id, { id: entry.id, state: "checking" }]),
+  );
+  render();
+  showCheckOverlay(0, entries.length);
+
+  try {
+    const results = await invoke("check_servers");
+    // The per-server events painted the marks on the way; this reconciles the
+    // final set in case one event was missed.
+    checks = new Map(results.map((check) => [check.id, check]));
+  } catch (error) {
+    appendLog(`server check error: ${error}`);
+    showNotice("Server check failed");
+  } finally {
+    checkRunning = false;
+    hideCheckOverlay();
+    render();
+  }
 }
 
 function paintPing(id) {
@@ -568,6 +617,15 @@ window.addEventListener("error", (event) => {
 
 listen("xray-log", (event) => appendLog(event.payload));
 
+/** One server finished its health check; the overlay counts them down. */
+listen("server-check", (event) => {
+  const { check, done, total } = event.payload ?? {};
+  if (!check) return;
+  checks.set(check.id, check);
+  showCheckOverlay(done, total);
+  render();
+});
+
 /** The backend reports real connect stages; the wave is determinate meanwhile. */
 listen("tunnel-progress", (event) => {
   const value = event.payload?.value;
@@ -591,6 +649,12 @@ window.addEventListener("rumurule:ping-settings", (event) => {
   pingGroup(null);
 });
 
+/** New split rules make the last health check stale. */
+window.addEventListener("rumurule:split-changed", () => {
+  checks.clear();
+  render();
+});
+
 /** The privacy switch changed; repaint without re-probing. */
 window.addEventListener("rumurule:show-address", (event) => {
   showAddress = event.detail === true;
@@ -604,6 +668,12 @@ async function start() {
     showAddress = settings.showAddress === true;
   } catch (error) {
     appendLog(`settings error: ${error}`);
+  }
+  try {
+    const saved = await invoke("check_results");
+    checks = new Map(saved.map((check) => [check.id, check]));
+  } catch (error) {
+    appendLog(`check results error: ${error}`);
   }
   await reload();
   await refreshStatus();
@@ -629,6 +699,12 @@ async function start() {
   homeErrorDismiss.addEventListener("click", () => {
     connectError = null;
     renderHome();
+  });
+
+  checkAllButton.addEventListener("click", () => {
+    // The results and their marks live in Servers, so go there first.
+    showTab("servers", { fade: true });
+    checkAllServers();
   });
 }
 

@@ -13,7 +13,7 @@ _repo=RumuRule
 pkgrel=1
 pkgdesc="VPN client with a TUN interface and a local SOCKS/HTTP proxy (Material You, Xray core)"
 arch=('x86_64' 'aarch64')
-url="https://github.com/Sho1don/RumuRule"
+url="https://github.com/Sho1don/rumurule"
 license=('AGPL-3.0-only')
 # makepkg appends LTOFLAGS (-flto=auto) to CFLAGS and LDFLAGS. ring's
 # pregenerated assembly then links with every ring_core_* symbol undefined,

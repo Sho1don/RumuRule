@@ -198,6 +198,11 @@ function endDrag(event, cancelled = false) {
 }
 
 /** Wire the dock, swipes and keyboard, then restore the last section. */
+/** Show a section from outside the dock, e.g. after starting a check. */
+export function showTab(name, options) {
+  activate(name, options);
+}
+
 export function initTabs() {
   let saved = null;
   try {

@@ -32,6 +32,25 @@ const ICONS = {
     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
   </svg>`,
+  ok: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
+  </svg>`,
+  dead: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6.5 6.5l11 11"></path>
+    <path d="M17.5 6.5l-11 11"></path>
+  </svg>`,
+  barely: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.3 9.2a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.2 1-1.2 1.9v.5"></path>
+    <path d="M12 17.6v.1"></path>
+  </svg>`,
+  checking: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round">
+    <circle cx="12" cy="12" r="8" opacity="0.25"></circle>
+    <path d="M20 12a8 8 0 0 0-8-8"></path>
+  </svg>`,
 };
 
 function el(tag, className, text) {
@@ -82,6 +101,28 @@ function iconButton(action, icon, title, { id, subscription, danger = false } = 
   return button;
 }
 
+/** Health mark from the last full check; absent until one has run. */
+function checkMark(entry, checks) {
+  const check = checks.get(entry.id);
+  if (!check) return null;
+  const mark = el("span", "check-mark");
+  mark.dataset.state = check.state;
+  mark.dataset.checkId = entry.id;
+  mark.innerHTML = ICONS[check.state] ?? ICONS.checking;
+  mark.title = checkTitle(check);
+  return mark;
+}
+
+function checkTitle(check) {
+  if (check.state === "checking") return "Checking this server…";
+  if (check.state === "ok") return "Works with the current split";
+  if (check.state === "barely") {
+    const ms = check.ms !== undefined ? ` (${check.ms} ms)` : "";
+    return `${check.reason ?? "Works, but barely"}${ms}`;
+  }
+  return check.reason ? `Not reachable: ${check.reason}` : "Not reachable";
+}
+
 function pingButton(entry, pings) {
   const state = pings.get(entry.id);
   const button = el("button", "ping", pingLabel(state));
@@ -93,7 +134,7 @@ function pingButton(entry, pings) {
   return button;
 }
 
-function serverItem(entry, running, connectedId, selectedId, pings, showAddress) {
+function serverItem(entry, running, connectedId, selectedId, pings, checks, showAddress) {
   const active = running && connectedId === entry.id;
   const selected = entry.id === selectedId;
   const item = el("li", "item");
@@ -122,6 +163,8 @@ function serverItem(entry, running, connectedId, selectedId, pings, showAddress)
   main.append(title, el("span", "item-meta", describe(entry.profile, showAddress)));
 
   const buttons = el("div", "item-actions");
+  const mark = checkMark(entry, checks);
+  if (mark) buttons.append(mark);
   buttons.append(
     pingButton(entry, pings),
     iconButton("entry-menu", "more", "Server options", { id: entry.id }),
@@ -150,7 +193,7 @@ function sortRank(entry) {
   return STAR.test(nameOf(entry)) ? 1 : 2;
 }
 
-function serverList(entries, running, connectedId, selectedId, pings, showAddress) {
+function serverList(entries, running, connectedId, selectedId, pings, checks, showAddress) {
   const list = el("ul", "list");
   // Pinned first in subscription order, then starred nodes, then countries
   // alphabetically. Array#sort is stable, so equal ranks keep their order.
@@ -160,7 +203,7 @@ function serverList(entries, running, connectedId, selectedId, pings, showAddres
     return countryKey(a).localeCompare(countryKey(b), "ru");
   });
   for (const entry of ordered) {
-    list.append(serverItem(entry, running, connectedId, selectedId, pings, showAddress));
+    list.append(serverItem(entry, running, connectedId, selectedId, pings, checks, showAddress));
   }
   return list;
 }
@@ -199,6 +242,7 @@ export function renderServers(
   connectedId,
   selectedId,
   pings,
+  checks,
   collapsed,
   showAddress,
 ) {
@@ -234,7 +278,7 @@ export function renderServers(
     );
 
     if (members.length) {
-      const list = serverList(members, running, connectedId, selectedId, pings, showAddress);
+      const list = serverList(members, running, connectedId, selectedId, pings, checks, showAddress);
       list.hidden = isCollapsed;
       group.append(list);
     } else if (!isCollapsed) {
@@ -255,7 +299,7 @@ export function renderServers(
         collapsed: isCollapsed,
       }),
     );
-    const list = serverList(standalone, running, connectedId, selectedId, pings, showAddress);
+    const list = serverList(standalone, running, connectedId, selectedId, pings, checks, showAddress);
     list.hidden = isCollapsed;
     group.append(list);
     serversRoot.append(group);

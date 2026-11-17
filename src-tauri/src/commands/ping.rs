@@ -1,17 +1,20 @@
 //! Latency probes for saved servers: TCP, ICMP and HTTP through the server.
 
 use std::{
+    collections::VecDeque,
     fs,
     net::{TcpListener, TcpStream, ToSocketAddrs},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 
+use serde::Serialize;
 use serde_json::{json, Value};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 
-use rumurule_core::{config, Entry, PingKind, PingMode};
+use rumurule_core::{config, Entry, PingKind, PingMode, Settings, SplitMode};
 
 use super::{profiles::Profiles, settings::SettingsStore};
 
@@ -19,6 +22,218 @@ const TIMEOUT: Duration = Duration::from_millis(1500);
 const BUDGET: Duration = Duration::from_millis(2500);
 /// How long a throwaway Xray instance gets to bind its SOCKS inbound.
 const STARTUP: Duration = Duration::from_millis(1200);
+
+/// Health check: one small page through the tunnel, twice at most.
+const CHECK_URL: &str = "https://www.gstatic.com/generate_204";
+const CHECK_TIMEOUT: Duration = Duration::from_millis(4000);
+/// Answers above this are alive but barely, so the list asks before trusting.
+const CHECK_SLOW_MS: u32 = 3000;
+/// A temporary Xray per server costs memory, so a few run at a time.
+const CHECK_WORKERS: usize = 3;
+
+/// Event name for per-server health results.
+pub const CHECK_EVENT: &str = "server-check";
+
+/// How a server answered through the tunnel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CheckState {
+    Ok,
+    Barely,
+    Dead,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServerCheck {
+    pub id: String,
+    pub state: CheckState,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ms: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+/// Last results, kept so a rebuilt webview still shows the marks.
+#[derive(Default)]
+pub struct ServerChecks(pub Mutex<Vec<ServerCheck>>);
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CheckProgress {
+    done: usize,
+    total: usize,
+    check: ServerCheck,
+}
+
+/// Test every saved server through the tunnel with the current split rules.
+#[tauri::command]
+pub async fn check_servers(
+    app: AppHandle,
+    profiles: State<'_, Profiles>,
+    settings: State<'_, SettingsStore>,
+    stored: State<'_, ServerChecks>,
+) -> Result<Vec<ServerCheck>, String> {
+    let settings = settings.snapshot();
+    let entries = profiles.entries();
+    let total = entries.len();
+    if total == 0 {
+        stored.0.lock().expect("checks poisoned").clear();
+        return Ok(Vec::new());
+    }
+
+    let binary = crate::xray::binary_path(&app)?;
+    let queue = Arc::new(Mutex::new(entries.into_iter().collect::<VecDeque<_>>()));
+    let done = Arc::new(Mutex::new(Vec::<ServerCheck>::new()));
+
+    let workers = CHECK_WORKERS.min(total);
+    let mut handles = Vec::with_capacity(workers);
+    for _ in 0..workers {
+        let app = app.clone();
+        let queue = Arc::clone(&queue);
+        let done = Arc::clone(&done);
+        let binary = binary.clone();
+        let settings = settings.clone();
+        handles.push(std::thread::spawn(move || loop {
+            let entry = queue.lock().expect("queue poisoned").pop_front();
+            let Some(entry) = entry else { break };
+            let check = check_entry(&entry, &binary, &settings);
+            let mut results = done.lock().expect("checks poisoned");
+            results.push(check.clone());
+            let _ = app.emit(
+                CHECK_EVENT,
+                CheckProgress {
+                    done: results.len(),
+                    total,
+                    check,
+                },
+            );
+        }));
+    }
+
+    let results = tauri::async_runtime::spawn_blocking(move || {
+        for handle in handles {
+            let _ = handle.join();
+        }
+        done.lock().expect("checks poisoned").clone()
+    })
+    .await
+    .map_err(|error| format!("check task failed: {error}"))?;
+
+    *stored.0.lock().expect("checks poisoned") = results.clone();
+    Ok(results)
+}
+
+/// Results of the last full check, for a window that was re-created.
+#[tauri::command]
+pub fn check_results(stored: State<'_, ServerChecks>) -> Vec<ServerCheck> {
+    stored.0.lock().expect("checks poisoned").clone()
+}
+
+/// Probe one entry and classify the answer.
+fn check_entry(entry: &Entry, binary: &Path, settings: &Settings) -> ServerCheck {
+    let result = |state, ms, reason: Option<String>| ServerCheck {
+        id: entry.id.clone(),
+        state,
+        ms,
+        reason,
+    };
+    if entry.config.is_none() && entry.profile.server.is_empty() {
+        return result(CheckState::Dead, None, Some("no address".into()));
+    }
+
+    let mut base = entry
+        .config
+        .clone()
+        .unwrap_or_else(|| config::build_config(&entry.profile));
+    // Bypass is the case this check exists for: the real list decides what
+    // leaves the tunnel. Only would send a foreign probe direct, which says
+    // nothing about the server, so it is left alone.
+    if settings.split.mode == SplitMode::Bypass {
+        config::apply_split(&mut base, &settings.split);
+    }
+
+    let port = match free_port() {
+        Ok(port) => port,
+        Err(error) => return result(CheckState::Dead, None, Some(error)),
+    };
+    let _probe = match Probe::start(binary, &base, port) {
+        Ok(probe) => probe,
+        Err(error) => return result(CheckState::Dead, None, Some(trim_reason(&error))),
+    };
+
+    let proxy = match reqwest::Proxy::all(format!("socks5h://127.0.0.1:{port}")) {
+        Ok(proxy) => proxy,
+        Err(error) => return result(CheckState::Dead, None, Some(error.to_string())),
+    };
+    let client = match reqwest::blocking::Client::builder()
+        .proxy(proxy)
+        .timeout(CHECK_TIMEOUT)
+        .connect_timeout(CHECK_TIMEOUT)
+        .build()
+    {
+        Ok(client) => client,
+        Err(error) => return result(CheckState::Dead, None, Some(error.to_string())),
+    };
+
+    match check_request(&client) {
+        Ok(ms) if ms <= CHECK_SLOW_MS => result(CheckState::Ok, Some(ms), None),
+        Ok(ms) => result(
+            CheckState::Barely,
+            Some(ms),
+            Some("answers, but slowly".into()),
+        ),
+        Err(first) => {
+            std::thread::sleep(Duration::from_millis(300));
+            match check_request(&client) {
+                Ok(ms) => result(
+                    CheckState::Barely,
+                    Some(ms),
+                    Some("answered only on the second try".into()),
+                ),
+                Err(second) => result(
+                    CheckState::Dead,
+                    None,
+                    Some(trim_reason(&format!("{first}; retry: {second}"))),
+                ),
+            }
+        }
+    }
+}
+
+fn check_request(client: &reqwest::blocking::Client) -> Result<u32, String> {
+    let started = Instant::now();
+    let response = client.get(CHECK_URL).send().map_err(describe)?;
+    let elapsed = elapsed_ms(started);
+    // The body is drained so the connection closes cleanly and a failed read
+    // still counts as a failure.
+    response.bytes().map_err(describe)?;
+    Ok(elapsed)
+}
+
+/// Keep tooltips readable: reqwest chains its causes with long URLs.
+fn trim_reason(text: &str) -> String {
+    let lower = text.to_lowercase();
+    if lower.contains("timed out") || lower.contains("timeout") {
+        return "timed out".into();
+    }
+    if lower.contains("connection refused") {
+        return "connection refused".into();
+    }
+    if lower.contains("connection reset") || lower.contains("unexpected eof") {
+        return "connection reset".into();
+    }
+    if lower.contains("dns") || lower.contains("lookup") {
+        return "cannot resolve the test address".into();
+    }
+
+    let mut flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    if flat.chars().count() > 160 {
+        flat = flat.chars().take(157).collect::<String>();
+        flat.push_str("...");
+    }
+    flat
+}
 
 /// Measure latency to a saved server with the configured probe.
 #[tauri::command]

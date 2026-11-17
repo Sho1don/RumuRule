@@ -1,6 +1,6 @@
 # RumuRule — project status
 
-Last updated: 2026-11-13. Scope: Linux-first Xray desktop client (proxy and TUN
+Last updated: 2026-11-16. Scope: Linux-first Xray desktop client (proxy and TUN
 modes). macOS is intentionally out of scope.
 
 > Snapshot of what works today and what is still missing. Percentages are
@@ -27,6 +27,7 @@ client installs from a package and TUN works end to end on a live host.
 | Xray sidecar and connection | Complete | 95% | Config generation, `xray run -test` validation before start, lifecycle, log streaming, orphan cleanup, proxy and TUN modes |
 | System proxy | Mostly | 95% | KDE + GNOME, snapshot and restore after crash; no Windows/WPAD |
 | Latency probes | Mostly | 95% | Proxy GET, TCP, ICMP; `default` / `double` / `keep-alive`; custom test URL |
+| Server health check | Complete | 100% | One probe per server through the tunnel with the current split; dimmed overlay while it runs, ✓ / ? / ✗ marks with the reason on hover |
 | Status tab | Complete | 100% | Connect/Disconnect, current server, live session timer |
 | Settings UI | Complete | 100% | HWID, tunnel mode and TUN status, system proxy, split tunneling, ping options, core version; Ping and Split tunneling fold like server groups |
 | Split tunneling | Mostly | 80% | Domains, IPs, CIDR subnets and geo matchers (`geosite:`, `geoip:`) in Bypass or Only mode, applied to the next connection in both proxy and TUN modes; presets for Russia and private networks; per-app rules still missing |

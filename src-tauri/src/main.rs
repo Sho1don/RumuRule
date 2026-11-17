@@ -49,6 +49,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(XrayManager::default())
+        .manage(commands::ping::ServerChecks::default())
         .manage(Quitting::default())
         .manage(window::WindowState::default())
         .setup(|app| {
@@ -64,6 +65,9 @@ fn main() {
             }
             session::spawn(app.handle().clone());
             window::apply_override(app);
+            if let Some(window) = app.get_webview_window("main") {
+                window::lock_zoom(&window);
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -86,6 +90,8 @@ fn main() {
             commands::profiles::subscription_remove,
             commands::profiles::connect_entry,
             commands::ping::ping_entry,
+            commands::ping::check_servers,
+            commands::ping::check_results,
             commands::settings::settings_get,
             commands::settings::settings_set_hwid,
             commands::settings::settings_set_show_address,
