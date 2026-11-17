@@ -69,7 +69,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::tunnel::core_name,
             commands::tunnel::profile_from_link,
-            commands::tunnel::connect,
             commands::tunnel::disconnect,
             commands::tunnel::tunnel_status,
             commands::tunnel::tun_prereqs,

@@ -32,7 +32,7 @@ pub fn apply(config: &mut Value, split: &SplitTunnel) {
     }
 
     let tag = match split.mode {
-        SplitMode::Bypass => "direct".to_string(),
+        SplitMode::Bypass => direct_tag(config),
         _ => proxy_tag(config),
     };
     let mut rules = Vec::new();
@@ -62,13 +62,34 @@ pub fn apply(config: &mut Value, split: &SplitTunnel) {
         rules.push(json!({
             "type": "field",
             "network": "tcp,udp",
-            "outboundTag": "direct"
+            "outboundTag": direct_tag(config)
         }));
     }
     if !config["routing"].is_object() {
         config["routing"] = json!({ "domainStrategy": "IPIfNonMatch" });
     }
     config["routing"]["rules"] = Value::Array(rules);
+}
+
+/// The outbound that skips the tunnel: `direct` in our own configs, or whatever
+/// a ready-made subscription config calls its freedom outbound (`DIRECT`).
+fn direct_tag(config: &Value) -> String {
+    let Some(outbounds) = config["outbounds"].as_array() else {
+        return "direct".into();
+    };
+    if let Some(tag) = outbounds
+        .iter()
+        .filter_map(|outbound| outbound["tag"].as_str())
+        .find(|tag| tag.eq_ignore_ascii_case("direct"))
+    {
+        return tag.to_string();
+    }
+    outbounds
+        .iter()
+        .find(|outbound| outbound["protocol"] == "freedom")
+        .and_then(|outbound| outbound["tag"].as_str())
+        .unwrap_or("direct")
+        .to_string()
 }
 
 /// The outbound that carries tunneled traffic: `proxy` in our own configs, or
@@ -106,11 +127,13 @@ fn classify(raw: &str) -> Option<Target> {
         return None;
     }
     let lower = entry.to_ascii_lowercase();
-    // `geosite:` and `geoip:` need the data files next to the core, and the
-    // package does not ship them: the config would fail to start. They are
-    // dropped here instead of breaking the whole connection.
-    if lower.starts_with("geosite:") || lower.starts_with("geoip:") {
-        return None;
+    // Geo lists read `geosite.dat` and `geoip.dat` from the core's asset
+    // directory; the package installs both next to the binary.
+    if lower.starts_with("geosite:") {
+        return Some(Target::Domain(entry.to_string()));
+    }
+    if lower.starts_with("geoip:") {
+        return Some(Target::Address(entry.to_string()));
     }
     if lower.starts_with("domain:") || lower.starts_with("regexp:") || lower.starts_with("full:") {
         return Some(Target::Domain(entry.to_string()));
@@ -229,11 +252,12 @@ mod tests {
     }
 
     #[test]
-    fn geo_lists_are_dropped_not_passed_through() {
-        // The bundled core has no geosite.dat or geoip.dat: passing these on
-        // would fail every connection.
-        assert!(classify("geosite:private").is_none());
-        assert!(classify("geoip:ru").is_none());
+    fn geo_lists_keep_their_matcher() {
+        let mut value = config();
+        apply(&mut value, &split(SplitMode::Bypass, &["geosite:ru", "geoip:ru"]));
+        let rules = value["routing"]["rules"].as_array().unwrap();
+        assert_eq!(rules[0]["domain"][0], "geosite:ru");
+        assert_eq!(rules[1]["ip"][0], "geoip:ru");
     }
 
     #[test]
@@ -243,6 +267,32 @@ mod tests {
         assert!(classify("999.1.1.1").is_none());
         assert!(classify("10.0.0.0/99").is_none());
         assert!(classify("host/path").is_none());
+    }
+
+    #[test]
+    fn direct_tag_follows_a_ready_made_config() {
+        let mut value = json!({
+            "outbounds": [
+                { "tag": "PROXY", "protocol": "vless" },
+                { "tag": "DIRECT", "protocol": "freedom" }
+            ],
+            "routing": { "rules": [] }
+        });
+        apply(&mut value, &split(SplitMode::Bypass, &["bank.example"]));
+        assert_eq!(value["routing"]["rules"][0]["outboundTag"], "DIRECT");
+    }
+
+    #[test]
+    fn freedom_outbound_without_a_name_still_works() {
+        let mut value = json!({
+            "outbounds": [
+                { "tag": "node", "protocol": "trojan" },
+                { "protocol": "freedom" }
+            ],
+            "routing": { "rules": [] }
+        });
+        apply(&mut value, &split(SplitMode::Bypass, &["bank.example"]));
+        assert_eq!(value["routing"]["rules"][0]["outboundTag"], "direct");
     }
 
     #[test]

@@ -71,6 +71,11 @@ body:has(#view-home[data-active="true"]) #state {
   min-width: 0;
 }
 
+/* A grid display would otherwise beat the hidden attribute. */
+.field[hidden] {
+  display: none;
+}
+
 /* A tiny "i" that carries the explanation a subtitle used to hold. */
 .hint {
   display: inline-grid;

@@ -146,7 +146,7 @@
             </span>
             <span class="group-title">Split tunneling</span>
             <span class="hint"
-              title="Applied to the next connection. Geo lists are not bundled and are ignored.">i</span>
+              title="Applied to the next connection. geosite:, geoip:, full:, domain: and regexp: are native matchers.">i</span>
             <span id="split-state" class="group-count">off</span>
           </button>
           <div class="collapse-body">
@@ -158,11 +158,19 @@
                 <option value="only">Only – the list uses the tunnel</option>
               </select>
             </label>
-            <label class="field">
-              <span class="field-label">Domains, IPs and subnets</span>
-              <textarea id="split-entries" rows="4" spellcheck="false"
-                placeholder="one entry per line&#10;example.com&#10;10.0.0.0/8"></textarea>
-            </label>
+            <div id="split-fields" class="field">
+              <label class="field">
+                <span class="field-label">Domains, IPs and subnets</span>
+                <textarea id="split-entries" rows="4" spellcheck="false"
+                  placeholder="one entry per line&#10;example.com&#10;10.0.0.0/8&#10;geosite:category-ru"></textarea>
+              </label>
+              <div class="inline">
+                <button id="split-preset-ru" class="tonal" type="button">Russia direct</button>
+                <button id="split-preset-private" class="tonal" type="button">
+                  Private networks
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="divider"></div>

@@ -282,24 +282,21 @@ pub fn connect_entry(
             .ok_or_else(|| format!("unknown profile {id}"))?
     };
 
-    let mode = settings.snapshot().tunnel_mode;
-    let status = if mode == TunnelMode::Tun {
-        let base = match entry.config {
-            Some(config) => config,
-            None => {
-                let profile = parse_link(&entry.link).map_err(|e| e.to_string())?;
-                rumurule_core::config::build_config(&profile)
-            }
-        };
-        xray.start_tun(&app, &base)?
-    } else {
-        match entry.config {
-            Some(config) => xray.start_config(&app, &config)?,
-            None => {
-                let profile = parse_link(&entry.link).map_err(|e| e.to_string())?;
-                xray.start(&app, &profile)?
-            }
+    // Both paths must carry the split rules: a ready-made subscription config
+    // has its own routing table, and without this the list was ignored.
+    let snapshot = settings.snapshot();
+    let mut config = match entry.config {
+        Some(config) => config,
+        None => {
+            let profile = parse_link(&entry.link).map_err(|e| e.to_string())?;
+            rumurule_core::config::build_config(&profile)
         }
+    };
+    rumurule_core::config::apply_split(&mut config, &snapshot.split);
+
+    let status = match snapshot.tunnel_mode {
+        TunnelMode::Tun => xray.start_tun(&app, &config)?,
+        TunnelMode::Proxy => xray.start_config(&app, &config)?,
     };
 
     apply_proxy(&app, &settings, &proxy, &status);

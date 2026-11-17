@@ -39,9 +39,9 @@ cd packaging
 makepkg -si
 ```
 
-The PKGBUILD pulls the release tarball and the pinned Xray archive, both with
-checksums. It is only valid once a `v0.9.2` tag exists; before that, build from
-a checkout with `cargo build --release`.
+The PKGBUILD clones the tag named by `pkgver` and downloads the pinned Xray
+archive, whose checksum it verifies. It is only valid once the matching tag
+exists; before that, build from a checkout with `cargo build --release`.
 
 The package opts out of makepkg's LTO for a reason noted in `PKGBUILD`; do not
 turn it back on without checking that the link still succeeds.

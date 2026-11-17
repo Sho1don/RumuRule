@@ -27,8 +27,10 @@ if [ "$ACTUAL" != "$SHA256" ]; then
     exit 1
 fi
 
-unzip -oq "$TMP/xray.zip" xray -d "$TMP"
+unzip -oq "$TMP/xray.zip" xray geosite.dat geoip.dat -d "$TMP"
 mkdir -p "$DEST/bin"
 install -m 755 "$TMP/xray" "$DEST/bin/xray"
+# The core reads geo matchers from its own directory.
+install -m 644 "$TMP/geosite.dat" "$TMP/geoip.dat" "$DEST/bin/"
 "$DEST/bin/xray" version | head -1
 echo "Installed to $DEST/bin/xray"

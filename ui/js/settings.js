@@ -22,6 +22,9 @@ const pingSummary = document.querySelector("#ping-summary");
 const splitBlock = document.querySelector("#split-block");
 const splitToggle = document.querySelector("#split-toggle");
 const splitMode = document.querySelector("#split-mode");
+const splitFields = document.querySelector("#split-fields");
+const presetRussia = document.querySelector("#split-preset-ru");
+const presetPrivate = document.querySelector("#split-preset-private");
 const splitEntries = document.querySelector("#split-entries");
 const splitState = document.querySelector("#split-state");
 const coreVersion = document.querySelector("#core-version");
@@ -61,6 +64,19 @@ function splitSummaryText(mode, count) {
   return mode === "off" ? "off" : `${mode} · ${count}`;
 }
 
+/// Ready-made lists that would otherwise be typed by hand. The geo matchers
+/// read the data files installed next to the core.
+const SPLIT_PRESETS = {
+  ru: ["geosite:category-ru", "geoip:ru"],
+  private: ["geoip:private"],
+};
+
+/// Everything a preset can own. Applying one replaces the other presets
+/// instead of piling them up, while lines typed by hand survive.
+const PRESET_ENTRIES = new Set(
+  Object.values(SPLIT_PRESETS).flat().map((entry) => entry.toLowerCase()),
+);
+
 function render(settings) {
   current = settings;
   toggle.checked = settings.hwidEnabled;
@@ -86,6 +102,13 @@ function render(settings) {
   // Never rewrite the textarea under the cursor.
   if (document.activeElement !== splitEntries) splitEntries.value = entries;
   splitState.textContent = splitSummaryText(split.mode, split.entries?.length ?? 0);
+  showSplitFields(split.mode ?? "off");
+}
+
+/// The list only matters with a mode; while the tunnel is off the section stays
+/// as short as the switch it belongs to.
+function showSplitFields(mode) {
+  splitFields.hidden = mode === "off";
 }
 
 async function saveSplit() {
@@ -232,7 +255,27 @@ export async function initSettings() {
   });
   setSplitCollapsed(localStorage.getItem(SPLIT_COLLAPSED_KEY) === "true");
 
-  splitMode.addEventListener("change", saveSplit);
+  splitMode.addEventListener("change", () => {
+    showSplitFields(splitMode.value);
+    saveSplit();
+  });
+
+  const applyPreset = async (preset) => {
+    // A preset is a choice, not an addition: the previous preset's lines go
+    // away, hand-written ones stay.
+    const kept = splitEntries.value
+      .split("\n")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry && !PRESET_ENTRIES.has(entry.toLowerCase()));
+    splitEntries.value = [...kept, ...preset].join("\n");
+    // A preset is only useful with a mode, so an untouched section switches to
+    // Bypass: the listed destinations skip the tunnel.
+    if (splitMode.value === "off") splitMode.value = "bypass";
+    showSplitFields(splitMode.value);
+    await saveSplit();
+  };
+  presetRussia.addEventListener("click", () => applyPreset(SPLIT_PRESETS.ru));
+  presetPrivate.addEventListener("click", () => applyPreset(SPLIT_PRESETS.private));
   splitEntries.addEventListener("change", saveSplit);
 
   refreshPrereqs();

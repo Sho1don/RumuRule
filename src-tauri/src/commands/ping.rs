@@ -214,13 +214,16 @@ impl Probe {
         let body = serde_json::to_vec(&probe_config(base, port)).map_err(|e| e.to_string())?;
         fs::write(&config, body).map_err(|error| format!("cannot write {}: {error}", config.display()))?;
 
-        let mut child = Command::new(binary)
+        let mut command = Command::new(binary);
+        command
             .arg("run")
             .arg("-c")
             .arg(&config)
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
+            .stderr(Stdio::null());
+        crate::xray::apply_asset_dir(&mut command, binary);
+        let mut child = command
             .spawn()
             .map_err(|error| format!("cannot start {}: {error}", binary.display()))?;
 

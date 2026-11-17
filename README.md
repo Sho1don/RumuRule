@@ -89,7 +89,7 @@ How the helper owns the tunnel, resolves outbound domains and handles FakeDNS, M
 - **Bypass** sends the listed destinations around the tunnel, for example a bank, a local printer or `192.168.0.0/16`.
 - **Only** does the inverse: the listed destinations use the tunnel and everything else leaves through the physical link.
 
-The list becomes Xray routing rules, so it works in both proxy and TUN mode. Private ranges and loopback already skip the tunnel; a TUN session also keeps port 53 on the tunnel resolver. `full:`, `domain:` and `regexp:` prefixes are passed through as native matchers; `geosite:` and `geoip:` are ignored because the package does not ship the geo data files.
+The list becomes Xray routing rules, so it works in both proxy and TUN mode. Private ranges and loopback already skip the tunnel; a TUN session also keeps port 53 on the tunnel resolver. `full:`, `domain:`, `regexp:`, `geosite:` and `geoip:` prefixes are native matchers, and the package installs `geosite.dat` and `geoip.dat` next to the core, so `geosite:category-ru`, `geoip:ru` and `geoip:private` work out of the box. The **Preset** menu fills those in for you.
 
 ## Privacy
 

@@ -15,9 +15,11 @@ use std::{
 use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 
-use rumurule_core::{config, Profile};
+use rumurule_core::config;
 
 use binary::{config_path, find_binary};
+
+pub(crate) use binary::apply_asset_dir;
 pub(crate) use output::{stream_output, stream_output_tail, Tail};
 
 use crate::tun::{self, Session as TunSession};
@@ -37,11 +39,10 @@ pub fn version(binary: &Path) -> Result<String, String> {
 /// `-test` parses and builds every outbound and inbound without opening a
 /// socket, so a schema change in a new core shows up as one readable line.
 fn check_config(binary: &Path, path: &Path) -> Result<(), String> {
-    let output = std::process::Command::new(binary)
-        .arg("run")
-        .arg("-test")
-        .arg("-c")
-        .arg(path)
+    let mut command = std::process::Command::new(binary);
+    command.arg("run").arg("-test").arg("-c").arg(path);
+    binary::apply_asset_dir(&mut command, binary);
+    let output = command
         .output()
         .map_err(|e| format!("cannot check the config: {e}"))?;
     if output.status.success() {
@@ -169,11 +170,6 @@ fn now_millis() -> u64 {
 }
 
 impl XrayManager {
-    /// Start Xray with a freshly generated configuration.
-    pub fn start(&self, app: &AppHandle, profile: &Profile) -> Result<Status, String> {
-        self.start_config(app, &config::build_config(profile))
-    }
-
     /// Start Xray with a ready-made configuration from a subscription.
     pub fn start_config(
         &self,
@@ -197,12 +193,15 @@ impl XrayManager {
         check_config(&binary, &config_path)?;
         emit_progress(app, 0.35, "starting Xray");
 
-        let mut child = std::process::Command::new(&binary)
+        let mut command = std::process::Command::new(&binary);
+        command
             .arg("run")
             .arg("-c")
             .arg(&config_path)
             .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped());
+        binary::apply_asset_dir(&mut command, &binary);
+        let mut child = command
             .spawn()
             .map_err(|e| format!("cannot start {}: {e}", binary.display()))?;
 

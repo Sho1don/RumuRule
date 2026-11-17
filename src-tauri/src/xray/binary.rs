@@ -38,6 +38,21 @@ pub(super) fn find_binary(app: &AppHandle) -> Result<PathBuf, String> {
     })
 }
 
+/// Point the core at its geo data when the files sit next to it.
+///
+/// Xray reads `geosite.dat` and `geoip.dat` from the asset directory, which
+/// defaults to the executable's own directory. A distro `xray` keeps them
+/// elsewhere and sets the variable itself, so the override only appears when
+/// the files are really there.
+pub(crate) fn apply_asset_dir(command: &mut std::process::Command, binary: &Path) {
+    let Some(dir) = binary.parent() else {
+        return;
+    };
+    if dir.join("geosite.dat").is_file() || dir.join("geoip.dat").is_file() {
+        command.env("XRAY_LOCATION_ASSET", dir);
+    }
+}
+
 fn find_on_path(name: &str) -> Option<PathBuf> {
     let path = std::env::var_os("PATH")?;
     std::env::split_paths(&path)

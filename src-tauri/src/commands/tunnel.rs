@@ -2,12 +2,11 @@
 
 use tauri::{AppHandle, Emitter, State};
 
-use rumurule_core::{parse_link, Profile, TunnelMode};
+use rumurule_core::{parse_link, Profile};
 
-use crate::commands::settings::{apply_proxy, SettingsStore};
 use crate::system_proxy::SystemProxy;
 use crate::tun::{self, Prereqs};
-use crate::xray::{emit_progress, Status, XrayManager, LOG_EVENT};
+use crate::xray::{Status, XrayManager, LOG_EVENT};
 
 #[tauri::command]
 pub fn core_name() -> &'static str {
@@ -17,28 +16,6 @@ pub fn core_name() -> &'static str {
 #[tauri::command]
 pub fn profile_from_link(link: String) -> Result<Profile, String> {
     parse_link(&link).map_err(|e| e.to_string())
-}
-
-#[tauri::command(async)]
-pub fn connect(
-    app: AppHandle,
-    state: State<'_, XrayManager>,
-    settings: State<'_, SettingsStore>,
-    proxy: State<'_, SystemProxy>,
-    link: String,
-) -> Result<Status, String> {
-    let profile = parse_link(&link).map_err(|e| e.to_string())?;
-    let snapshot = settings.snapshot();
-    let mut config = rumurule_core::config::build_config(&profile);
-    rumurule_core::config::apply_split(&mut config, &snapshot.split);
-    let status = match snapshot.tunnel_mode {
-        TunnelMode::Tun => state.start_tun(&app, &config)?,
-        TunnelMode::Proxy => state.start_config(&app, &config)?,
-    };
-
-    apply_proxy(&app, &settings, &proxy, &status);
-    emit_progress(&app, 1.0, "connected");
-    Ok(status)
 }
 
 #[tauri::command(async)]

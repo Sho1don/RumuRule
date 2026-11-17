@@ -53,6 +53,9 @@ package() {
     install -Dm755 target/release/rumurule-helper \
         "$pkgdir/usr/lib/rumurule/rumurule-helper"
     install -Dm755 "$srcdir/xray" "$pkgdir/usr/lib/rumurule/xray"
+    # geosite: and geoip: matchers read these from the core's directory.
+    install -Dm644 "$srcdir/geosite.dat" "$pkgdir/usr/lib/rumurule/geosite.dat"
+    install -Dm644 "$srcdir/geoip.dat" "$pkgdir/usr/lib/rumurule/geoip.dat"
 
     install -Dm644 packaging/slop.rumurule.tunnel.policy \
         "$pkgdir/usr/share/polkit-1/actions/slop.rumurule.tunnel.policy"
